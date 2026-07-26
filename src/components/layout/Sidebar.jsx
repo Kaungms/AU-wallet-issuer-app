@@ -15,24 +15,14 @@ const navigationItems = [
     icon: LayoutDashboard,
   },
   {
-    id: "records",
-    label: "Student Records",
+    id: "students",
+    label: "Student Data",
     icon: FolderOpen,
   },
   {
-    id: "claims",
-    label: "Claims Review",
-    icon: FileCheck2,
-  },
-  {
-    id: "offer",
-    label: "Credential Offer",
+    id: "issue",
+    label: "Issue Transcript",
     icon: FilePlus2,
-  },
-  {
-    id: "credentials",
-    label: "Credentials",
-    icon: BadgeCheck,
   },
 ];
 
