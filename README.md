@@ -1,1 +1,1 @@
-# AU-wallet-holder-app
+# AU-wallet-issuer-app
