@@ -8,11 +8,17 @@ html {
   font-family: "Inter", sans-serif;
   background: #faf7f5;
   color: #1c1918;
+  min-height: 100%;
 }
 
 body {
   margin: 0;
   min-width: 320px;
+  min-height: 100vh;
+  background: #faf7f5;
+}
+
+#root {
   min-height: 100vh;
 }
 
