@@ -1,6 +1,4 @@
 import {
-  BadgeCheck,
-  FileCheck2,
   FilePlus2,
   FolderOpen,
   GraduationCap,
@@ -20,7 +18,7 @@ const navigationItems = [
     icon: FolderOpen,
   },
   {
-    id: "issue",
+    id: "issue-transcript",
     label: "Issue Transcript",
     icon: FilePlus2,
   },
