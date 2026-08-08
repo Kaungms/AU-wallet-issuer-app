@@ -1,4 +1,5 @@
 import { useState } from "react";
+import BatchTranscript from "../batch-transcript/BatchTranscript";
 import "./issue-transcript.css";
 
 const mockStudent = {
@@ -10,50 +11,238 @@ const mockStudent = {
   program: "Bachelor of Science in Computer Science",
   admissionYear: "2022",
   academicStatus: "Active",
-  cgpa: "3.42",
+  cgpa: "3.54",
   totalCredits: "96",
   walletDid: "did:key:z6MkiAUStudentWallet6512345",
 
-  courses: [
+  transcript: [
     {
-      code: "CSX3001",
-      name: "Data Structures and Algorithms",
-      credits: 3,
-      grade: "A",
-      semester: "1/2025",
-    },
-    {
-      code: "CSX3002",
-      name: "Database Management Systems",
-      credits: 3,
-      grade: "B+",
-      semester: "1/2025",
-    },
-    {
-      code: "CSX3003",
-      name: "Operating Systems",
-      credits: 3,
-      grade: "B",
-      semester: "1/2025",
-    },
-    {
-      code: "CSX4203",
-      name: "Machine Learning",
-      credits: 3,
-      grade: "A",
       semester: "2/2025",
+      gpa: "3.63",
+      credits: 20,
+
+      courses: [
+        {
+          code: "BBA1005",
+          name: "Essential Finance for Entrepreneurs",
+          credits: 2,
+          grade: "B+",
+        },
+        {
+          code: "BG14036",
+          name: "Professional Ethics Seminar VI",
+          credits: 0,
+          grade: "S",
+        },
+        {
+          code: "CSX3007",
+          name: "Computer Architecture",
+          credits: 3,
+          grade: "C+",
+        },
+        {
+          code: "CSX3008",
+          name: "Operating Systems",
+          credits: 3,
+          grade: "A-",
+        },
+        {
+          code: "CSX4201",
+          name: "Artificial Intelligence Concepts",
+          credits: 3,
+          grade: "A",
+        },
+        {
+          code: "CSX4212",
+          name: "Data Analytics",
+          credits: 3,
+          grade: "A",
+        },
+        {
+          code: "ITX4502",
+          name: "Tech Startup",
+          credits: 3,
+          grade: "A",
+        },
+        {
+          code: "MU1002",
+          name: "Pop Music Appreciation",
+          credits: 3,
+          grade: "A",
+        },
+      ],
     },
+
     {
-      code: "ITX4285",
-      name: "Artificial Intelligence",
-      credits: 3,
-      grade: "A-",
-      semester: "2/2025",
+      semester: "1/2025",
+      gpa: "3.54",
+      credits: 18,
+
+      courses: [
+        {
+          code: "BG14035",
+          name: "Professional Ethics Seminar V",
+          credits: 0,
+          grade: "S",
+        },
+        {
+          code: "CSX3004",
+          name: "Programming Languages",
+          credits: 3,
+          grade: "B-",
+        },
+        {
+          code: "CSX3010",
+          name: "Senior Project I",
+          credits: 3,
+          grade: "A-",
+        },
+        {
+          code: "CSX4107",
+          name: "Software Engineering",
+          credits: 3,
+          grade: "A",
+        },
+        {
+          code: "CSX4108",
+          name: "Web Application Development",
+          credits: 3,
+          grade: "B+",
+        },
+        {
+          code: "ITX3005",
+          name: "Information Technology Management",
+          credits: 3,
+          grade: "A",
+        },
+      ],
+    },
+
+    {
+      semester: "2/2024",
+      gpa: "3.48",
+      credits: 18,
+
+      courses: [
+        {
+          code: "CSX3001",
+          name: "Data Structures and Algorithms",
+          credits: 3,
+          grade: "A",
+        },
+        {
+          code: "CSX3002",
+          name: "Database Management Systems",
+          credits: 3,
+          grade: "B+",
+        },
+        {
+          code: "CSX3003",
+          name: "Computer Networks",
+          credits: 3,
+          grade: "B",
+        },
+        {
+          code: "CSX3005",
+          name: "Software Design",
+          credits: 3,
+          grade: "A-",
+        },
+        {
+          code: "GE1403",
+          name: "Communication Skills",
+          credits: 3,
+          grade: "A",
+        },
+        {
+          code: "MA1201",
+          name: "Discrete Mathematics",
+          credits: 3,
+          grade: "B+",
+        },
+      ],
+    },
+
+    {
+      semester: "1/2024",
+      gpa: "3.42",
+      credits: 18,
+
+      courses: [
+        {
+          code: "CSX2001",
+          name: "Object Oriented Programming",
+          credits: 3,
+          grade: "A",
+        },
+        {
+          code: "CSX2002",
+          name: "Computer Organization",
+          credits: 3,
+          grade: "B",
+        },
+        {
+          code: "CSX2003",
+          name: "Data Communication",
+          credits: 3,
+          grade: "B+",
+        },
+        {
+          code: "MA2201",
+          name: "Probability and Statistics",
+          credits: 3,
+          grade: "A-",
+        },
+        {
+          code: "EN2001",
+          name: "Academic English",
+          credits: 3,
+          grade: "A",
+        },
+        {
+          code: "GE2001",
+          name: "Ethics and Society",
+          credits: 3,
+          grade: "B+",
+        },
+      ],
     },
   ],
 };
 
 function IssueTranscript() {
+  const [mode, setMode] = useState("single");
+
+  return (
+    <div className="issue-transcript-wrapper">
+      <div className="issue-mode-tabs">
+        <button
+          type="button"
+          className={`issue-mode-tab ${
+            mode === "single" ? "issue-mode-tab-active" : ""
+          }`}
+          onClick={() => setMode("single")}
+        >
+          Single Issuance
+        </button>
+
+        <button
+          type="button"
+          className={`issue-mode-tab ${
+            mode === "batch" ? "issue-mode-tab-active" : ""
+          }`}
+          onClick={() => setMode("batch")}
+        >
+          Batch Issuance
+        </button>
+      </div>
+
+      {mode === "single" ? <SingleTranscript /> : <BatchTranscript />}
+    </div>
+  );
+}
+
+function SingleTranscript() {
   const [studentId, setStudentId] = useState("");
   const [student, setStudent] = useState(null);
   const [searchError, setSearchError] = useState("");
@@ -73,7 +262,7 @@ function IssueTranscript() {
 
     if (cleanedStudentId !== mockStudent.studentId) {
       setSearchError(
-        "Student not found. For this demo, use student ID 6512345."
+        "Student not found. For this demo, use student ID 6512345.",
       );
       setStudent(null);
       return;
@@ -102,12 +291,10 @@ function IssueTranscript() {
       setIssuanceStatus("generating");
       setCurrentStep(3);
 
-      // Demo delay representing VC generation and digital signing.
       await new Promise((resolve) => setTimeout(resolve, 1200));
 
       setIssuanceStatus("sending");
 
-      // Demo delay representing delivery to the holder wallet.
       await new Promise((resolve) => setTimeout(resolve, 1200));
 
       setIssuanceStatus("success");
@@ -142,6 +329,7 @@ function IssueTranscript() {
       <div className="issue-page-heading">
         <div>
           <h1>Issue Transcript</h1>
+
           <p>
             Verify an AU student, review the official academic transcript, and
             send a signed verifiable credential to the student's wallet.
@@ -238,9 +426,7 @@ function IssueTranscript() {
               )}
             </div>
 
-            {searchError && (
-              <p className="form-error-message">{searchError}</p>
-            )}
+            {searchError && <p className="form-error-message">{searchError}</p>}
           </div>
         </form>
       </section>
@@ -248,7 +434,9 @@ function IssueTranscript() {
       {!student && (
         <section className="empty-transcript-state">
           <div className="empty-state-icon">⌕</div>
+
           <h2>No student selected</h2>
+
           <p>
             Search for a student to load their information and official
             transcript from the AU database.
@@ -263,6 +451,7 @@ function IssueTranscript() {
               <div className="card-heading">
                 <div>
                   <h2>Student Information</h2>
+
                   <p>Information retrieved from the AU student database.</p>
                 </div>
 
@@ -286,13 +475,15 @@ function IssueTranscript() {
 
               <div className="information-list">
                 <InfoRow label="Email" value={student.email} />
+
                 <InfoRow label="Faculty" value={student.faculty} />
+
                 <InfoRow label="Department" value={student.department} />
+
                 <InfoRow label="Program" value={student.program} />
-                <InfoRow
-                  label="Admission year"
-                  value={student.admissionYear}
-                />
+
+                <InfoRow label="Admission year" value={student.admissionYear} />
+
                 <InfoRow
                   label="Academic status"
                   value={student.academicStatus}
@@ -304,6 +495,7 @@ function IssueTranscript() {
               <div className="card-heading">
                 <div>
                   <h2>Credential Information</h2>
+
                   <p>Information used when generating the transcript VC.</p>
                 </div>
               </div>
@@ -322,21 +514,22 @@ function IssueTranscript() {
                   label="Credential type"
                   value="AcademicTranscriptCredential"
                 />
+
                 <InfoRow
                   label="Issuer"
                   value="Assumption University Registrar"
                 />
+
                 <InfoRow
                   label="Issuer DID"
                   value="did:web:au.edu:registrar"
                   mono
                 />
-                <InfoRow
-                  label="Holder DID"
-                  value={student.walletDid}
-                  mono
-                />
+
+                <InfoRow label="Holder DID" value={student.walletDid} mono />
+
                 <InfoRow label="Signature" value="Ed25519 digital signature" />
+
                 <InfoRow label="Format" value="JSON-LD" />
               </div>
             </section>
@@ -346,9 +539,10 @@ function IssueTranscript() {
             <div className="card-heading transcript-heading">
               <div>
                 <h2>Official Academic Transcript</h2>
+
                 <p>
-                  Review the student's academic information before issuing the
-                  credential.
+                  Review the student's academic record semester by semester
+                  before issuing the transcript credential.
                 </p>
               </div>
 
@@ -359,38 +553,20 @@ function IssueTranscript() {
                 </div>
 
                 <div>
-                  <span>Total credits</span>
+                  <span>Total Credits</span>
                   <strong>{student.totalCredits}</strong>
                 </div>
               </div>
             </div>
 
-            <div className="transcript-table-container">
-              <table className="transcript-table">
-                <thead>
-                  <tr>
-                    <th>Course code</th>
-                    <th>Course name</th>
-                    <th>Semester</th>
-                    <th>Credits</th>
-                    <th>Grade</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {student.courses.map((course) => (
-                    <tr key={`${course.code}-${course.semester}`}>
-                      <td className="course-code">{course.code}</td>
-                      <td>{course.name}</td>
-                      <td>{course.semester}</td>
-                      <td>{course.credits}</td>
-                      <td>
-                        <span className="grade-badge">{course.grade}</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="semester-list">
+              {student.transcript.map((semester, index) => (
+                <SemesterSection
+                  key={semester.semester}
+                  semester={semester}
+                  defaultOpen={index === 0}
+                />
+              ))}
             </div>
           </section>
 
@@ -400,6 +576,7 @@ function IssueTranscript() {
 
               <div>
                 <h2>Ready to Issue Transcript</h2>
+
                 <p>
                   The transcript will be converted into a signed verifiable
                   credential and sent directly to the student's holder wallet.
@@ -429,6 +606,7 @@ function IssueTranscript() {
 
               <div>
                 <h2>Transcript successfully issued</h2>
+
                 <p>
                   The signed transcript credential was sent to{" "}
                   <strong>{student.name}</strong>'s holder wallet.
@@ -451,11 +629,12 @@ function IssueTranscript() {
 function ProgressStep({ number, title, active, completed }) {
   return (
     <div
-      className={`progress-step ${active ? "progress-step-active" : ""} ${
-        completed ? "progress-step-completed" : ""
-      }`}
+      className={`progress-step ${
+        active ? "progress-step-active" : ""
+      } ${completed ? "progress-step-completed" : ""}`}
     >
       <div className="progress-number">{completed ? "✓" : number}</div>
+
       <span>{title}</span>
     </div>
   );
@@ -465,9 +644,75 @@ function InfoRow({ label, value, mono = false }) {
   return (
     <div className="information-row">
       <span className="information-label">{label}</span>
+
       <span className={`information-value ${mono ? "mono-value" : ""}`}>
         {value}
       </span>
+    </div>
+  );
+}
+
+function SemesterSection({ semester, defaultOpen = false }) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className="semester-section">
+      <button
+        type="button"
+        className="semester-header"
+        onClick={() => setIsOpen((current) => !current)}
+      >
+        <div className="semester-title-area">
+          <span
+            className={`semester-arrow ${isOpen ? "semester-arrow-open" : ""}`}
+          >
+            ›
+          </span>
+
+          <div>
+            <h3>Term {semester.semester}</h3>
+
+            <span className="semester-course-count">
+              {semester.courses.length} courses
+            </span>
+          </div>
+        </div>
+
+        <div className="semester-summary">
+          <div className="semester-gpa">
+            <span>GPA</span>
+            <strong>{semester.gpa}</strong>
+          </div>
+
+          <div className="semester-credits">
+            <span>Credits</span>
+            <strong>{semester.credits}</strong>
+          </div>
+        </div>
+      </button>
+
+      {isOpen && (
+        <div className="semester-courses">
+          {semester.courses.map((course) => (
+            <div
+              className="semester-course-row"
+              key={`${semester.semester}-${course.code}`}
+            >
+              <div className="semester-course-information">
+                <div className="semester-course-code">
+                  {course.code}
+
+                  <span>{course.credits} CR.</span>
+                </div>
+
+                <div className="semester-course-name">{course.name}</div>
+              </div>
+
+              <div className="semester-course-grade">{course.grade}</div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
