@@ -213,12 +213,12 @@
 .primary-action-button {
   min-height: 43px;
   padding: 0 20px;
-  background: #3157c8;
+  background: #cc1919;
   color: #ffffff;
 }
 
 .primary-action-button:hover {
-  background: #294bb4;
+  background: #ad1515;
 }
 
 .secondary-action-button {
@@ -266,7 +266,7 @@
   margin-bottom: 14px;
   border-radius: 16px;
   background: #eef2ff;
-  color: #3157c8;
+  color: #cc1919;
   font-size: 28px;
 }
 
@@ -319,7 +319,7 @@
   height: 48px;
   flex-shrink: 0;
   border-radius: 13px;
-  background: #3157c8;
+  background: #cc1919;
   color: #ffffff;
   font-size: 15px;
   font-weight: 800;
@@ -347,7 +347,7 @@
   flex-shrink: 0;
   border-radius: 13px;
   background: #eef2ff;
-  color: #3157c8;
+  color: #cc1919;
   font-size: 14px;
   font-weight: 800;
 }
@@ -416,7 +416,7 @@
 }
 
 .academic-summary strong {
-  color: #2849aa;
+  color: #cc1919;
   font-size: 17px;
 }
 
@@ -460,7 +460,7 @@
 }
 
 .course-code {
-  color: #3157c8 !important;
+  color: #cc1919 !important;
   font-weight: 750;
 }
 
@@ -471,7 +471,7 @@
   padding: 5px 8px;
   border-radius: 7px;
   background: #edf2ff;
-  color: #3157c8;
+  color: #cc1919;
   font-weight: 800;
 }
 
@@ -532,12 +532,12 @@
   min-width: 225px;
   min-height: 45px;
   padding: 0 20px;
-  background: #3157c8;
+  background: #cc1919;
   color: #ffffff;
 }
 
 .issue-credential-button:hover:not(:disabled) {
-  background: #294bb4;
+  background: #ad1515;
 }
 
 .issue-credential-button:disabled {
@@ -657,5 +657,261 @@
 
   .issuance-checks {
     flex-direction: column;
+  }
+}
+/* Single / Batch issuance navigation */
+
+.issue-transcript-wrapper {
+  width: 100%;
+}
+
+.issue-mode-tabs {
+  display: inline-flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  padding: 4px;
+
+  background: #eee8e5;
+  border-radius: 9px;
+}
+
+.issue-mode-tab {
+  padding: 9px 17px;
+
+  color: #756a66;
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.issue-mode-tab:hover {
+  color: #332b29;
+}
+
+.issue-mode-tab-active {
+  color: #cc1919;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(44, 31, 28, 0.08);
+}
+
+/* =========================
+   COMPACT SEMESTER ACCORDION
+========================= */
+
+.semester-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+}
+
+.semester-section {
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #e8dfdb;
+  border-radius: 10px;
+}
+
+/* Header */
+
+.semester-header {
+  width: 100%;
+  min-height: 72px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  padding: 14px 18px;
+
+  background: #fcfaf9;
+  border: none;
+
+  color: #2b2220;
+  text-align: left;
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.semester-header:hover {
+  background: #f8f4f2;
+}
+
+/* Left side */
+
+.semester-title-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.semester-title-area h3 {
+  margin: 0 0 2px;
+
+  color: #2c2523;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.semester-course-count {
+  color: #9a908c;
+  font-size: 10px;
+}
+
+/* Arrow */
+
+.semester-arrow {
+  width: 26px;
+  height: 26px;
+
+  display: grid;
+  place-items: center;
+
+  color: #8e8581;
+  background: #f1ece9;
+  border-radius: 6px;
+
+  font-size: 18px;
+  line-height: 1;
+
+  transform: rotate(0deg);
+
+  transition:
+    transform 0.2s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.semester-arrow-open {
+  color: #ffffff;
+  background: #cc1919;
+  transform: rotate(90deg);
+}
+
+/* GPA + Credits */
+
+.semester-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.semester-gpa,
+.semester-credits {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  min-height: 30px;
+  padding: 5px 10px;
+
+  border-radius: 999px;
+}
+
+.semester-gpa {
+  color: #ffffff;
+  background: #cc1919;
+}
+
+.semester-credits {
+  color: #5e5551;
+  background: #f0ece9;
+}
+
+.semester-gpa span,
+.semester-credits span {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.semester-gpa strong,
+.semester-credits strong {
+  font-size: 11px;
+}
+
+/* Expanded courses */
+
+.semester-courses {
+  padding: 0 18px;
+  background: #ffffff;
+  border-top: 1px solid #eee7e3;
+}
+
+.semester-course-row {
+  min-height: 55px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+
+  padding: 10px 2px;
+
+  border-bottom: 1px solid #eee7e3;
+}
+
+.semester-course-row:last-child {
+  border-bottom: none;
+}
+
+.semester-course-code {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  margin-bottom: 3px;
+
+  color: #332b28;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.semester-course-code span {
+  color: #aaa19d;
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.semester-course-name {
+  color: #6f6662;
+  font-size: 10px;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.semester-course-grade {
+  min-width: 36px;
+
+  color: #cc1919;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* Mobile */
+
+@media (max-width: 700px) {
+  .semester-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .semester-summary {
+    margin-left: 38px;
   }
 }
