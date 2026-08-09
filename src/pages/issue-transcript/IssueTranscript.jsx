@@ -20,7 +20,6 @@ const mockStudent = {
       semester: "2/2025",
       gpa: "3.63",
       credits: 20,
-
       courses: [
         {
           code: "BBA1005",
@@ -77,7 +76,6 @@ const mockStudent = {
       semester: "1/2025",
       gpa: "3.54",
       credits: 18,
-
       courses: [
         {
           code: "BG14035",
@@ -122,7 +120,6 @@ const mockStudent = {
       semester: "2/2024",
       gpa: "3.48",
       credits: 18,
-
       courses: [
         {
           code: "CSX3001",
@@ -167,7 +164,6 @@ const mockStudent = {
       semester: "1/2024",
       gpa: "3.42",
       credits: 18,
-
       courses: [
         {
           code: "CSX2001",
@@ -262,7 +258,7 @@ function SingleTranscript() {
 
     if (cleanedStudentId !== mockStudent.studentId) {
       setSearchError(
-        "Student not found. For this demo, use student ID 6512345.",
+        "Student not found. For this demo, use student ID 6512345."
       );
       setStudent(null);
       return;
@@ -326,21 +322,27 @@ function SingleTranscript() {
 
   return (
     <div className="issue-transcript-page">
+      {/* ===============================
+          PAGE HEADING
+      =============================== */}
+
       <div className="issue-page-heading">
         <div>
+          <p className="issue-eyebrow">Transcript Issuance</p>
+
           <h1>Issue Transcript</h1>
 
           <p>
-            Verify an AU student, review the official academic transcript, and
-            send a signed verifiable credential to the student's wallet.
+            Verify an AU student, review the official academic transcript,
+            and prepare the transcript credential for issuance to the
+            student's wallet.
           </p>
         </div>
-
-        <div className="issuer-status">
-          <span className="issuer-status-dot" />
-          Issuer service active
-        </div>
       </div>
+
+      {/* ===============================
+          PROGRESS
+      =============================== */}
 
       <section className="issue-progress">
         <ProgressStep
@@ -390,11 +392,20 @@ function SingleTranscript() {
         />
       </section>
 
+      {/* ===============================
+          STUDENT SEARCH
+      =============================== */}
+
       <section className="issue-card student-search-card">
-        <div className="card-heading">
+        <div className="issue-search-heading">
+          <div className="issue-search-icon">⌕</div>
+
           <div>
             <h2>Find AU Student</h2>
-            <p>Enter the student's official AU student ID.</p>
+
+            <p>
+              Enter the student's official AU student ID.
+            </p>
           </div>
         </div>
 
@@ -411,7 +422,10 @@ function SingleTranscript() {
                 onChange={(event) => setStudentId(event.target.value)}
               />
 
-              <button className="primary-action-button" type="submit">
+              <button
+                className="primary-action-button"
+                type="submit"
+              >
                 Search Student
               </button>
 
@@ -426,10 +440,18 @@ function SingleTranscript() {
               )}
             </div>
 
-            {searchError && <p className="form-error-message">{searchError}</p>}
+            {searchError && (
+              <p className="form-error-message">
+                {searchError}
+              </p>
+            )}
           </div>
         </form>
       </section>
+
+      {/* ===============================
+          EMPTY STATE
+      =============================== */}
 
       {!student && (
         <section className="empty-transcript-state">
@@ -444,18 +466,28 @@ function SingleTranscript() {
         </section>
       )}
 
+      {/* ===============================
+          STUDENT FOUND
+      =============================== */}
+
       {student && (
         <>
           <div className="issue-content-grid">
+            {/* Student Information */}
+
             <section className="issue-card">
               <div className="card-heading">
                 <div>
                   <h2>Student Information</h2>
 
-                  <p>Information retrieved from the AU student database.</p>
+                  <p>
+                    Information retrieved from the AU student database.
+                  </p>
                 </div>
 
-                <span className="verified-badge">Verified</span>
+                <span className="verified-badge">
+                  Verified
+                </span>
               </div>
 
               <div className="student-profile">
@@ -474,15 +506,30 @@ function SingleTranscript() {
               </div>
 
               <div className="information-list">
-                <InfoRow label="Email" value={student.email} />
+                <InfoRow
+                  label="Email"
+                  value={student.email}
+                />
 
-                <InfoRow label="Faculty" value={student.faculty} />
+                <InfoRow
+                  label="Faculty"
+                  value={student.faculty}
+                />
 
-                <InfoRow label="Department" value={student.department} />
+                <InfoRow
+                  label="Department"
+                  value={student.department}
+                />
 
-                <InfoRow label="Program" value={student.program} />
+                <InfoRow
+                  label="Program"
+                  value={student.program}
+                />
 
-                <InfoRow label="Admission year" value={student.admissionYear} />
+                <InfoRow
+                  label="Admission year"
+                  value={student.admissionYear}
+                />
 
                 <InfoRow
                   label="Academic status"
@@ -491,17 +538,23 @@ function SingleTranscript() {
               </div>
             </section>
 
+            {/* Credential Information */}
+
             <section className="issue-card">
               <div className="card-heading">
                 <div>
                   <h2>Credential Information</h2>
 
-                  <p>Information used when generating the transcript VC.</p>
+                  <p>
+                    Information used when generating the transcript VC.
+                  </p>
                 </div>
               </div>
 
               <div className="credential-summary">
-                <div className="credential-icon">VC</div>
+                <div className="credential-icon">
+                  VC
+                </div>
 
                 <div>
                   <h3>AU Academic Transcript</h3>
@@ -526,14 +579,28 @@ function SingleTranscript() {
                   mono
                 />
 
-                <InfoRow label="Holder DID" value={student.walletDid} mono />
+                <InfoRow
+                  label="Holder DID"
+                  value={student.walletDid}
+                  mono
+                />
 
-                <InfoRow label="Signature" value="Ed25519 digital signature" />
+                <InfoRow
+                  label="Signature"
+                  value="Ed25519 digital signature"
+                />
 
-                <InfoRow label="Format" value="JSON-LD" />
+                <InfoRow
+                  label="Format"
+                  value="JSON-LD"
+                />
               </div>
             </section>
           </div>
+
+          {/* ===============================
+              TRANSCRIPT
+          =============================== */}
 
           <section className="issue-card transcript-card">
             <div className="card-heading transcript-heading">
@@ -570,22 +637,36 @@ function SingleTranscript() {
             </div>
           </section>
 
+          {/* ===============================
+              ISSUE ACTION
+          =============================== */}
+
           <section className="issue-card issuance-card">
             <div className="issuance-content">
-              <div className="issuance-icon">✓</div>
+              <div className="issuance-icon">
+                ✓
+              </div>
 
               <div>
                 <h2>Ready to Issue Transcript</h2>
 
                 <p>
-                  The transcript will be converted into a signed verifiable
-                  credential and sent directly to the student's holder wallet.
+                  Review the transcript information before proceeding with
+                  credential issuance.
                 </p>
 
                 <div className="issuance-checks">
-                  <span>✓ Student identity verified</span>
-                  <span>✓ Transcript loaded from AU records</span>
-                  <span>✓ Holder wallet DID available</span>
+                  <span>
+                    ✓ Student identity verified
+                  </span>
+
+                  <span>
+                    ✓ Transcript loaded from AU records
+                  </span>
+
+                  <span>
+                    ✓ Holder wallet available
+                  </span>
                 </div>
               </div>
             </div>
@@ -593,27 +674,42 @@ function SingleTranscript() {
             <button
               className="issue-credential-button"
               type="button"
-              disabled={isProcessing || issuanceStatus === "success"}
+              disabled={
+                isProcessing ||
+                issuanceStatus === "success"
+              }
               onClick={handleIssueTranscript}
             >
               {getButtonText()}
             </button>
           </section>
 
+          {/* ===============================
+              SUCCESS
+          =============================== */}
+
           {issuanceStatus === "success" && (
             <section className="issuance-success-message">
-              <div className="success-checkmark">✓</div>
+              <div className="success-checkmark">
+                ✓
+              </div>
 
               <div>
-                <h2>Transcript successfully issued</h2>
+                <h2>
+                  Transcript successfully issued
+                </h2>
 
                 <p>
-                  The signed transcript credential was sent to{" "}
-                  <strong>{student.name}</strong>'s holder wallet.
+                  The transcript credential was issued for{" "}
+                  <strong>{student.name}</strong>.
                 </p>
               </div>
             </section>
           )}
+
+          {/* ===============================
+              ERROR
+          =============================== */}
 
           {issuanceStatus === "error" && (
             <section className="issuance-error-message">
@@ -626,33 +722,57 @@ function SingleTranscript() {
   );
 }
 
-function ProgressStep({ number, title, active, completed }) {
+function ProgressStep({
+  number,
+  title,
+  active,
+  completed,
+}) {
   return (
     <div
       className={`progress-step ${
         active ? "progress-step-active" : ""
-      } ${completed ? "progress-step-completed" : ""}`}
+      } ${
+        completed
+          ? "progress-step-completed"
+          : ""
+      }`}
     >
-      <div className="progress-number">{completed ? "✓" : number}</div>
+      <div className="progress-number">
+        {completed ? "✓" : number}
+      </div>
 
       <span>{title}</span>
     </div>
   );
 }
 
-function InfoRow({ label, value, mono = false }) {
+function InfoRow({
+  label,
+  value,
+  mono = false,
+}) {
   return (
     <div className="information-row">
-      <span className="information-label">{label}</span>
+      <span className="information-label">
+        {label}
+      </span>
 
-      <span className={`information-value ${mono ? "mono-value" : ""}`}>
+      <span
+        className={`information-value ${
+          mono ? "mono-value" : ""
+        }`}
+      >
         {value}
       </span>
     </div>
   );
 }
 
-function SemesterSection({ semester, defaultOpen = false }) {
+function SemesterSection({
+  semester,
+  defaultOpen = false,
+}) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
@@ -660,11 +780,15 @@ function SemesterSection({ semester, defaultOpen = false }) {
       <button
         type="button"
         className="semester-header"
-        onClick={() => setIsOpen((current) => !current)}
+        onClick={() =>
+          setIsOpen((current) => !current)
+        }
       >
         <div className="semester-title-area">
           <span
-            className={`semester-arrow ${isOpen ? "semester-arrow-open" : ""}`}
+            className={`semester-arrow ${
+              isOpen ? "semester-arrow-open" : ""
+            }`}
           >
             ›
           </span>
@@ -702,13 +826,19 @@ function SemesterSection({ semester, defaultOpen = false }) {
                 <div className="semester-course-code">
                   {course.code}
 
-                  <span>{course.credits} CR.</span>
+                  <span>
+                    {course.credits} CR.
+                  </span>
                 </div>
 
-                <div className="semester-course-name">{course.name}</div>
+                <div className="semester-course-name">
+                  {course.name}
+                </div>
               </div>
 
-              <div className="semester-course-grade">{course.grade}</div>
+              <div className="semester-course-grade">
+                {course.grade}
+              </div>
             </div>
           ))}
         </div>
