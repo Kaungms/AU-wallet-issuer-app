@@ -1,21 +1,28 @@
 import { useState } from "react";
+
 import MainLayout from "./components/layout/MainLayout";
+
+import Dashboard from "./pages/dashboard/Dashboard";
 import IssueTranscript from "./pages/issue-transcript/IssueTranscript";
 
 const pageInformation = {
   dashboard: {
     title: "Dashboard",
-    description: "Overview of credential issuing activities.",
+    description:
+      "Monitor student wallet readiness and transcript issuance preparation.",
   },
+
   students: {
     title: "Student Data",
     description: "Search and review official AU student records.",
   },
+
   "issue-transcript": {
     title: "Issue Transcript",
     description:
-      "Review an official transcript and send a signed credential to the student's wallet.",
+      "Review official academic records and prepare transcript credentials for issuance.",
   },
+
   settings: {
     title: "Settings",
     description: "Manage issuer portal configuration.",
@@ -24,30 +31,40 @@ const pageInformation = {
 
 function App() {
   const [activePage, setActivePage] = useState("dashboard");
+  const [issueMode, setIssueMode] = useState("single"); // New state for issue mode
+  const handlePageChange = (page, mode = null) => {
+    if (page === "issue-transcript" && mode) {
+      setIssueMode(mode);
+    }
+
+    setActivePage(page);
+  };
 
   const currentPage = pageInformation[activePage] || pageInformation.dashboard;
 
   const renderPage = () => {
     switch (activePage) {
+      case "dashboard":
+        return <Dashboard onPageChange={handlePageChange} />;
+
       case "students":
         return <p>Student Data page will be added later.</p>;
 
       case "issue-transcript":
-        return <IssueTranscript />;
+        return <IssueTranscript initialMode={issueMode} />;
 
       case "settings":
         return <p>Settings page will be added later.</p>;
 
-      case "dashboard":
       default:
-        return <p>Dashboard page will be added later.</p>;
+        return <Dashboard onPageChange={handlePageChange} />;
     }
   };
 
   return (
     <MainLayout
       activePage={activePage}
-      onPageChange={setActivePage}
+      onPageChange={handlePageChange}
       title={currentPage.title}
       description={currentPage.description}
     >
