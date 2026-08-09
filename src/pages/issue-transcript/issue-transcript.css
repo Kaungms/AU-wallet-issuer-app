@@ -3,124 +3,166 @@
   max-width: 1440px;
   margin: 0 auto;
   padding: 4px 0 40px;
-  color: #182033;
+  color: #2b2522;
 }
 
+/* ========================================
+   PAGE HEADING
+======================================== */
+
 .issue-page-heading {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 28px;
+  margin-bottom: 22px;
+}
+
+.issue-eyebrow {
+  margin: 0 0 5px;
+  color: #cc1919;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
 }
 
 .issue-page-heading h1 {
-  margin: 0 0 8px;
-  font-size: 30px;
-  font-weight: 750;
-  letter-spacing: -0.5px;
-  color: #182033;
+  margin: 0 0 7px;
+  color: #241d1b;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 27px;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
-.issue-page-heading p {
+.issue-page-heading > div > p:last-child {
   max-width: 760px;
   margin: 0;
-  color: #697386;
-  font-size: 14px;
+  color: #776d69;
+  font-size: 12px;
   line-height: 1.6;
 }
 
-.issuer-status {
+/* ========================================
+   SINGLE / BATCH TABS
+======================================== */
+
+.issue-transcript-wrapper {
+  width: 100%;
+}
+
+.issue-mode-tabs {
   display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-  padding: 9px 13px;
-  border: 1px solid #d8e9de;
-  border-radius: 999px;
-  background: #f2fbf5;
-  color: #267044;
-  font-size: 12px;
-  font-weight: 700;
+  gap: 4px;
+  margin-bottom: 24px;
+  padding: 4px;
+  background: #eee8e5;
+  border-radius: 9px;
 }
 
-.issuer-status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #31a866;
-  box-shadow: 0 0 0 4px rgba(49, 168, 102, 0.12);
+.issue-mode-tab {
+  min-height: 36px;
+  padding: 0 17px;
+  color: #756a66;
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
-/* Progress */
+.issue-mode-tab:hover {
+  color: #332b29;
+}
+
+.issue-mode-tab-active {
+  color: #cc1919;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(44, 31, 28, 0.08);
+}
+
+/* ========================================
+   PROGRESS
+======================================== */
 
 .issue-progress {
   display: flex;
   align-items: center;
-  padding: 20px 24px;
-  margin-bottom: 22px;
-  border: 1px solid #e2e6ee;
-  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
   background: #ffffff;
-  box-shadow: 0 6px 22px rgba(34, 45, 72, 0.04);
+  border: 1px solid #eae2de;
+  border-radius: 13px;
 }
 
 .progress-step {
   display: flex;
   align-items: center;
   gap: 9px;
-  color: #9aa3b3;
-  font-size: 12px;
-  font-weight: 700;
+  color: #a39995;
+  font-size: 11px;
+  font-weight: 600;
   white-space: nowrap;
 }
 
 .progress-number {
-  display: grid;
-  place-items: center;
   width: 28px;
   height: 28px;
-  border: 2px solid #d9dee7;
-  border-radius: 50%;
+
+  display: grid;
+  place-items: center;
+
+  color: #9f9591;
   background: #ffffff;
-  font-size: 11px;
+
+  border: 2px solid #ddd4d0;
+  border-radius: 50%;
+
+  font-size: 10px;
+  font-weight: 700;
 }
 
 .progress-step-active {
-  color: #2947a9;
+  color: #cc1919;
 }
 
 .progress-step-active .progress-number {
-  border-color: #3157c8;
-  background: #eef2ff;
-  color: #3157c8;
+  color: #cc1919;
+  background: #fff7f6;
+  border-color: #cc1919;
 }
 
 .progress-step-completed .progress-number {
-  border-color: #3157c8;
-  background: #3157c8;
   color: #ffffff;
+  background: #cc1919;
+  border-color: #cc1919;
 }
 
 .progress-line {
-  height: 2px;
+  height: 1px;
   flex: 1;
   min-width: 24px;
   margin: 0 12px;
-  background: #e4e7ed;
+  background: #e8e0dc;
 }
 
 .progress-line-active {
-  background: #3157c8;
+  background: #cc1919;
 }
 
-/* General cards */
+/* ========================================
+   GENERAL CARDS
+======================================== */
 
 .issue-card {
-  border: 1px solid #e1e5ed;
-  border-radius: 14px;
+  overflow: hidden;
   background: #ffffff;
-  box-shadow: 0 7px 24px rgba(33, 46, 75, 0.045);
+  border: 1px solid #eae2de;
+  border-radius: 13px;
 }
 
 .card-heading {
@@ -128,163 +170,235 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 18px;
-  padding: 22px 24px;
-  border-bottom: 1px solid #edf0f4;
+  padding: 20px 22px;
+  border-bottom: 1px solid #eee7e3;
 }
 
 .card-heading h2 {
-  margin: 0 0 6px;
-  color: #1e2738;
-  font-size: 17px;
-  font-weight: 750;
+  margin: 0 0 5px;
+  color: #241d1b;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .card-heading p {
   margin: 0;
-  color: #7a8497;
-  font-size: 12px;
+  color: #817672;
+  font-size: 11px;
   line-height: 1.5;
 }
 
-/* Student search */
+/* ========================================
+   STUDENT SEARCH
+======================================== */
 
 .student-search-card {
-  margin-bottom: 22px;
+  margin-bottom: 20px;
+}
+
+.issue-search-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px 22px;
+  border-bottom: 1px solid #eee7e3;
+}
+
+.issue-search-icon {
+  width: 38px;
+  height: 38px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  color: #cc1919;
+  background: #f7e3e1;
+
+  border-radius: 9px;
+
+  font-size: 18px;
+}
+
+.issue-search-heading h2 {
+  margin: 0 0 5px;
+  color: #241d1b;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.issue-search-heading p {
+  margin: 0;
+  color: #817672;
+  font-size: 11px;
 }
 
 .student-search-form {
-  padding: 22px 24px 24px;
+  padding: 20px 22px;
 }
 
 .search-input-group {
-  max-width: 820px;
+  width: 100%;
 }
 
 .search-input-group label {
   display: block;
-  margin-bottom: 8px;
-  color: #3e485b;
-  font-size: 12px;
+  margin-bottom: 7px;
+  color: #6b615e;
+  font-size: 10px;
   font-weight: 700;
 }
 
 .search-input-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .search-input-row input {
   flex: 1;
   min-width: 180px;
-  height: 43px;
-  padding: 0 14px;
-  border: 1px solid #d9dee8;
-  border-radius: 9px;
-  outline: none;
+  height: 42px;
+
+  padding: 0 12px;
+
+  color: #312a28;
   background: #ffffff;
-  color: #20283a;
-  font: inherit;
-  font-size: 13px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+
+  border: 1px solid #ded5d1;
+  border-radius: 8px;
+
+  outline: none;
+
+  font-family: inherit;
+  font-size: 11px;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .search-input-row input:focus {
-  border-color: #5575d3;
-  box-shadow: 0 0 0 3px rgba(49, 87, 200, 0.11);
+  border-color: #cc1919;
+  box-shadow: 0 0 0 3px rgba(204, 25, 25, 0.08);
 }
 
 .search-input-row input::placeholder {
-  color: #a3aaba;
+  color: #aaa19d;
 }
 
 .primary-action-button,
 .secondary-action-button,
 .issue-credential-button {
-  border: none;
-  border-radius: 9px;
-  cursor: pointer;
+  min-height: 42px;
+  padding: 0 18px;
+
+  border-radius: 8px;
+
   font: inherit;
-  font-size: 12px;
-  font-weight: 750;
-  transition: transform 0.15s, opacity 0.15s, background 0.15s;
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    opacity 0.15s ease;
 }
 
 .primary-action-button {
-  min-height: 43px;
-  padding: 0 20px;
-  background: #cc1919;
   color: #ffffff;
+  background: #cc1919;
+  border: 1px solid #cc1919;
 }
 
 .primary-action-button:hover {
   background: #ad1515;
+  border-color: #ad1515;
 }
 
 .secondary-action-button {
-  min-height: 43px;
-  padding: 0 18px;
-  border: 1px solid #d9dee8;
+  color: #443b38;
   background: #ffffff;
-  color: #536075;
+  border: 1px solid #ddd3cf;
 }
 
 .secondary-action-button:hover {
-  background: #f6f7fa;
-}
-
-.primary-action-button:active,
-.secondary-action-button:active,
-.issue-credential-button:active {
-  transform: translateY(1px);
+  background: #f8f4f2;
+  border-color: #c9bbb6;
 }
 
 .form-error-message {
   margin: 9px 0 0;
-  color: #c84040;
-  font-size: 12px;
+  color: #b32626;
+  font-size: 10px;
 }
 
-/* Empty state */
+/* ========================================
+   EMPTY STATE
+======================================== */
 
 .empty-transcript-state {
-  display: grid;
-  place-items: center;
-  min-height: 310px;
+  min-height: 250px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  margin-top: 20px;
   padding: 40px;
-  border: 1px dashed #d8dde7;
-  border-radius: 14px;
-  background: #fbfcfe;
+
+  color: #8d827e;
+  background: #ffffff;
+
+  border: 1px dashed #ddd3cf;
+  border-radius: 13px;
+
   text-align: center;
 }
 
 .empty-state-icon {
+  width: 44px;
+  height: 44px;
+
   display: grid;
   place-items: center;
-  width: 58px;
-  height: 58px;
-  margin-bottom: 14px;
-  border-radius: 16px;
-  background: #eef2ff;
+
+  margin-bottom: 12px;
+
   color: #cc1919;
-  font-size: 28px;
+  background: #f7e3e1;
+
+  border-radius: 9px;
+
+  font-size: 19px;
 }
 
 .empty-transcript-state h2 {
-  margin: 0 0 8px;
-  color: #2a3345;
-  font-size: 17px;
+  margin: 0 0 7px;
+  color: #443936;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .empty-transcript-state p {
   max-width: 500px;
   margin: 0;
-  color: #838c9c;
-  font-size: 13px;
+  color: #817672;
+  font-size: 11px;
   line-height: 1.6;
 }
 
-/* Information cards */
+/* ========================================
+   INFORMATION CARDS
+======================================== */
 
 .issue-content-grid {
   display: grid;
@@ -296,96 +410,113 @@
 .verified-badge {
   display: inline-flex;
   align-items: center;
-  padding: 7px 11px;
+  padding: 5px 9px;
+  color: #28744a;
+  background: #e7f4ec;
   border-radius: 999px;
-  background: #eaf8ef;
-  color: #247244;
-  font-size: 11px;
-  font-weight: 750;
+  font-size: 9px;
+  font-weight: 700;
 }
 
 .student-profile,
 .credential-summary {
   display: flex;
   align-items: center;
-  gap: 13px;
-  padding: 22px 24px;
+  gap: 12px;
+  padding: 20px 22px;
 }
 
 .student-avatar {
+  width: 42px;
+  height: 42px;
+
   display: grid;
   place-items: center;
-  width: 48px;
-  height: 48px;
+
   flex-shrink: 0;
-  border-radius: 13px;
-  background: #cc1919;
+
   color: #ffffff;
-  font-size: 15px;
-  font-weight: 800;
+  background: #cc1919;
+
+  border-radius: 9px;
+
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .student-profile h3,
 .credential-summary h3 {
-  margin: 0 0 5px;
-  color: #222c3e;
-  font-size: 14px;
+  margin: 0 0 4px;
+  color: #2b2522;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .student-profile p,
 .credential-summary p {
   margin: 0;
-  color: #7f899b;
-  font-size: 12px;
+  color: #857a76;
+  font-size: 10px;
 }
 
 .credential-icon {
+  width: 42px;
+  height: 42px;
+
   display: grid;
   place-items: center;
-  width: 48px;
-  height: 48px;
+
   flex-shrink: 0;
-  border-radius: 13px;
-  background: #eef2ff;
+
   color: #cc1919;
-  font-size: 14px;
-  font-weight: 800;
+  background: #f7e3e1;
+
+  border-radius: 9px;
+
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .information-list {
-  padding: 0 24px 20px;
+  padding: 0 22px 18px;
 }
 
 .information-row {
   display: grid;
   grid-template-columns: 145px minmax(0, 1fr);
   gap: 16px;
-  padding: 11px 0;
-  border-top: 1px solid #eff1f5;
-  font-size: 12px;
+
+  padding: 10px 0;
+
+  border-top: 1px solid #eee7e3;
 }
 
 .information-label {
-  color: #818b9c;
+  color: #8a817d;
+  font-size: 10px;
+  font-weight: 600;
 }
 
 .information-value {
   min-width: 0;
-  color: #354054;
-  font-weight: 650;
+  color: #403936;
+  font-size: 11px;
+  font-weight: 500;
   overflow-wrap: anywhere;
 }
 
 .mono-value {
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  font-size: 11px;
+  font-size: 10px;
 }
 
-/* Transcript */
+/* ========================================
+   TRANSCRIPT
+======================================== */
 
 .transcript-card {
   margin-bottom: 20px;
-  overflow: hidden;
 }
 
 .transcript-heading {
@@ -394,205 +525,371 @@
 
 .academic-summary {
   display: flex;
-  gap: 12px;
+  gap: 10px;
 }
 
 .academic-summary div {
-  min-width: 92px;
-  padding: 10px 14px;
-  border: 1px solid #e1e6ef;
-  border-radius: 10px;
-  background: #f8faff;
+  min-width: 88px;
+  padding: 9px 12px;
+
+  background: #faf7f5;
+  border: 1px solid #e7ded9;
+  border-radius: 9px;
+
   text-align: center;
 }
 
 .academic-summary span {
   display: block;
-  margin-bottom: 3px;
-  color: #8a94a7;
-  font-size: 10px;
+  margin-bottom: 2px;
+  color: #8c817d;
+  font-size: 8px;
   font-weight: 700;
   text-transform: uppercase;
 }
 
 .academic-summary strong {
   color: #cc1919;
-  font-size: 17px;
+  font-size: 16px;
 }
 
-.transcript-table-container {
-  overflow-x: auto;
+/* ========================================
+   SEMESTER ACCORDION
+======================================== */
+
+.semester-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
 }
 
-.transcript-table {
+.semester-section {
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #e8dfdb;
+  border-radius: 10px;
+}
+
+.semester-header {
   width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
+  min-height: 68px;
 
-.transcript-table th,
-.transcript-table td {
-  padding: 14px 20px;
-  border-bottom: 1px solid #edf0f4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  padding: 13px 17px;
+
+  color: #2b2220;
+  background: #fcfaf9;
+
+  border: none;
+
   text-align: left;
-  white-space: nowrap;
+  cursor: pointer;
+
+  transition: background 0.15s ease;
 }
 
-.transcript-table th {
-  background: #f7f8fb;
-  color: #798396;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.4px;
+.semester-header:hover {
+  background: #f8f4f2;
+}
+
+.semester-title-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.semester-title-area h3 {
+  margin: 0 0 2px;
+  color: #2c2523;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.semester-course-count {
+  color: #9a908c;
+  font-size: 9px;
+}
+
+.semester-arrow {
+  width: 25px;
+  height: 25px;
+
+  display: grid;
+  place-items: center;
+
+  color: #8e8581;
+  background: #f1ece9;
+
+  border-radius: 6px;
+
+  font-size: 17px;
+  line-height: 1;
+
+  transform: rotate(0deg);
+
+  transition:
+    transform 0.2s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.semester-arrow-open {
+  color: #ffffff;
+  background: #cc1919;
+  transform: rotate(90deg);
+}
+
+.semester-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.semester-gpa,
+.semester-credits {
+  min-height: 29px;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 5px 10px;
+
+  border-radius: 999px;
+}
+
+.semester-gpa {
+  color: #ffffff;
+  background: #cc1919;
+}
+
+.semester-credits {
+  color: #5e5551;
+  background: #f0ece9;
+}
+
+.semester-gpa span,
+.semester-credits span {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
 }
 
-.transcript-table td {
-  color: #4a5569;
+.semester-gpa strong,
+.semester-credits strong {
+  font-size: 11px;
 }
 
-.transcript-table tbody tr:last-child td {
+.semester-courses {
+  padding: 0 18px;
+  background: #ffffff;
+  border-top: 1px solid #eee7e3;
+}
+
+.semester-course-row {
+  min-height: 55px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+
+  padding: 10px 2px;
+
+  border-bottom: 1px solid #eee7e3;
+}
+
+.semester-course-row:last-child {
   border-bottom: none;
 }
 
-.transcript-table tbody tr:hover {
-  background: #fafbfe;
+.semester-course-code {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  margin-bottom: 3px;
+
+  color: #332b28;
+  font-size: 11px;
+  font-weight: 700;
 }
 
-.course-code {
-  color: #cc1919 !important;
-  font-weight: 750;
+.semester-course-code span {
+  color: #aaa19d;
+  font-size: 9px;
+  font-weight: 500;
 }
 
-.grade-badge {
-  display: inline-grid;
-  place-items: center;
-  min-width: 31px;
-  padding: 5px 8px;
-  border-radius: 7px;
-  background: #edf2ff;
+.semester-course-name {
+  color: #6f6662;
+  font-size: 10px;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.semester-course-grade {
+  min-width: 36px;
   color: #cc1919;
-  font-weight: 800;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: right;
 }
 
-/* Issuance */
+/* ========================================
+   ISSUANCE
+======================================== */
 
 .issuance-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 30px;
-  padding: 24px;
+  padding: 22px;
 }
 
 .issuance-content {
   display: flex;
   align-items: flex-start;
-  gap: 15px;
+  gap: 14px;
 }
 
 .issuance-icon {
+  width: 40px;
+  height: 40px;
+
   display: grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
+
   flex-shrink: 0;
-  border-radius: 12px;
-  background: #eaf8ef;
-  color: #23804a;
-  font-size: 18px;
-  font-weight: 800;
+
+  color: #28744a;
+  background: #e7f4ec;
+
+  border-radius: 10px;
+
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .issuance-content h2 {
-  margin: 0 0 7px;
-  color: #202a3c;
-  font-size: 16px;
+  margin: 0 0 6px;
+  color: #2b2522;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .issuance-content p {
   max-width: 690px;
   margin: 0;
-  color: #778195;
-  font-size: 12px;
-  line-height: 1.6;
+  color: #817874;
+  font-size: 11px;
+  line-height: 1.55;
 }
 
 .issuance-checks {
   display: flex;
   flex-wrap: wrap;
   gap: 10px 18px;
-  margin-top: 14px;
+
+  margin-top: 12px;
+
   color: #36724f;
-  font-size: 11px;
-  font-weight: 650;
+  font-size: 10px;
+  font-weight: 600;
 }
 
 .issue-credential-button {
-  min-width: 225px;
-  min-height: 45px;
-  padding: 0 20px;
-  background: #cc1919;
+  min-width: 210px;
   color: #ffffff;
+  background: #cc1919;
+  border: 1px solid #cc1919;
 }
 
 .issue-credential-button:hover:not(:disabled) {
   background: #ad1515;
+  border-color: #ad1515;
 }
 
 .issue-credential-button:disabled {
+  opacity: 0.55;
   cursor: not-allowed;
-  opacity: 0.65;
 }
+
+/* ========================================
+   SUCCESS / ERROR
+======================================== */
 
 .issuance-success-message,
 .issuance-error-message {
   margin-top: 18px;
-  border-radius: 12px;
+  border-radius: 11px;
 }
 
 .issuance-success-message {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 18px 20px;
-  border: 1px solid #cce9d7;
-  background: #f1fbf5;
+  gap: 13px;
+
+  padding: 16px 18px;
+
+  color: #276d47;
+  background: #eef8f2;
+
+  border: 1px solid #cfe7d7;
 }
 
 .success-checkmark {
+  width: 36px;
+  height: 36px;
+
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+
   flex-shrink: 0;
-  border-radius: 50%;
-  background: #2d9b5e;
+
   color: #ffffff;
-  font-weight: 800;
+  background: #2d9b5e;
+
+  border-radius: 50%;
+
+  font-weight: 700;
 }
 
 .issuance-success-message h2 {
   margin: 0 0 4px;
-  color: #206940;
-  font-size: 14px;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .issuance-success-message p {
   margin: 0;
-  color: #558068;
-  font-size: 12px;
+  font-size: 10px;
 }
 
 .issuance-error-message {
-  padding: 16px 18px;
-  border: 1px solid #efcccc;
-  background: #fff4f4;
-  color: #b43636;
-  font-size: 12px;
+  padding: 15px 17px;
+
+  color: #a42d2d;
+  background: #fbeded;
+
+  border: 1px solid #efd3d3;
+
+  font-size: 10px;
 }
 
-/* Responsive */
+/* ========================================
+   RESPONSIVE
+======================================== */
 
 @media (max-width: 1050px) {
   .issue-content-grid {
@@ -614,12 +911,16 @@
 }
 
 @media (max-width: 720px) {
-  .issue-page-heading {
-    flex-direction: column;
+  .issue-mode-tabs {
+    width: 100%;
+  }
+
+  .issue-mode-tab {
+    flex: 1;
   }
 
   .issue-progress {
-    padding: 17px;
+    padding: 14px;
   }
 
   .progress-line {
@@ -658,260 +959,13 @@
   .issuance-checks {
     flex-direction: column;
   }
-}
-/* Single / Batch issuance navigation */
 
-.issue-transcript-wrapper {
-  width: 100%;
-}
-
-.issue-mode-tabs {
-  display: inline-flex;
-  gap: 4px;
-  margin-bottom: 24px;
-  padding: 4px;
-
-  background: #eee8e5;
-  border-radius: 9px;
-}
-
-.issue-mode-tab {
-  padding: 9px 17px;
-
-  color: #756a66;
-  background: transparent;
-  border: none;
-  border-radius: 7px;
-
-  font-size: 11px;
-  font-weight: 600;
-
-  cursor: pointer;
-
-  transition:
-    background 0.15s ease,
-    color 0.15s ease;
-}
-
-.issue-mode-tab:hover {
-  color: #332b29;
-}
-
-.issue-mode-tab-active {
-  color: #cc1919;
-  background: #ffffff;
-  box-shadow: 0 1px 4px rgba(44, 31, 28, 0.08);
-}
-
-/* =========================
-   COMPACT SEMESTER ACCORDION
-========================= */
-
-.semester-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 18px;
-}
-
-.semester-section {
-  overflow: hidden;
-  background: #ffffff;
-  border: 1px solid #e8dfdb;
-  border-radius: 10px;
-}
-
-/* Header */
-
-.semester-header {
-  width: 100%;
-  min-height: 72px;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-
-  padding: 14px 18px;
-
-  background: #fcfaf9;
-  border: none;
-
-  color: #2b2220;
-  text-align: left;
-  cursor: pointer;
-
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease;
-}
-
-.semester-header:hover {
-  background: #f8f4f2;
-}
-
-/* Left side */
-
-.semester-title-area {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.semester-title-area h3 {
-  margin: 0 0 2px;
-
-  color: #2c2523;
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.semester-course-count {
-  color: #9a908c;
-  font-size: 10px;
-}
-
-/* Arrow */
-
-.semester-arrow {
-  width: 26px;
-  height: 26px;
-
-  display: grid;
-  place-items: center;
-
-  color: #8e8581;
-  background: #f1ece9;
-  border-radius: 6px;
-
-  font-size: 18px;
-  line-height: 1;
-
-  transform: rotate(0deg);
-
-  transition:
-    transform 0.2s ease,
-    background 0.15s ease,
-    color 0.15s ease;
-}
-
-.semester-arrow-open {
-  color: #ffffff;
-  background: #cc1919;
-  transform: rotate(90deg);
-}
-
-/* GPA + Credits */
-
-.semester-summary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.semester-gpa,
-.semester-credits {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-
-  min-height: 30px;
-  padding: 5px 10px;
-
-  border-radius: 999px;
-}
-
-.semester-gpa {
-  color: #ffffff;
-  background: #cc1919;
-}
-
-.semester-credits {
-  color: #5e5551;
-  background: #f0ece9;
-}
-
-.semester-gpa span,
-.semester-credits span {
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-}
-
-.semester-gpa strong,
-.semester-credits strong {
-  font-size: 11px;
-}
-
-/* Expanded courses */
-
-.semester-courses {
-  padding: 0 18px;
-  background: #ffffff;
-  border-top: 1px solid #eee7e3;
-}
-
-.semester-course-row {
-  min-height: 55px;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-
-  padding: 10px 2px;
-
-  border-bottom: 1px solid #eee7e3;
-}
-
-.semester-course-row:last-child {
-  border-bottom: none;
-}
-
-.semester-course-code {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-
-  margin-bottom: 3px;
-
-  color: #332b28;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.semester-course-code span {
-  color: #aaa19d;
-  font-size: 9px;
-  font-weight: 500;
-}
-
-.semester-course-name {
-  color: #6f6662;
-  font-size: 10px;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
-}
-
-.semester-course-grade {
-  min-width: 36px;
-
-  color: #cc1919;
-  font-size: 15px;
-  font-weight: 700;
-  text-align: right;
-}
-
-/* Mobile */
-
-@media (max-width: 700px) {
   .semester-header {
     align-items: flex-start;
     flex-direction: column;
   }
 
   .semester-summary {
-    margin-left: 38px;
+    margin-left: 37px;
   }
 }
