@@ -1,16 +1,45 @@
-# React + Vite
+# AU Wallet Issuer App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React/Vite issuer workspace for pre-issuance student and academic review.
+Credential generation, signing, issuance, DID operations, and wallet delivery
+are intentionally outside this repository's current integration.
 
-Currently, two official plugins are available:
+## Local development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Create an ignored `.env.local` with the NestJS server's base URL:
 
-## React Compiler
+```dotenv
+VITE_API_BASE_URL=http://<backend-host>:3000
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Then run:
 
-## Expanding the ESLint configuration
+```sh
+npm install
+npm run dev -- --port 5173 --strictPort
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The NestJS server must listen on an address reachable by the browser and allow
+the frontend origin through CORS.
+
+## Issuer API
+
+The API functions are exported from `src/api/issuerApi.js`. During the current
+controlled development test, requests do not send an `Authorization` header;
+temporary access is controlled by NestJS. Dashboard, student search, academic
+review/preview, program options, graduating-student search, and wallet
+eligibility are connected. The response schemas and database field mappings are
+documented in `docs/issuer-pre-issuance-api-contract.md`.
+
+Registrar-facing screens display the degree, major, and optional concentration;
+the synthetic `programCode` remains an internal API filter. An unverified wallet
+is shown as a warning but does not block pre-issuance student selection. Final
+credential issuance and wallet delivery are not implemented in this frontend.
+
+## Verification
+
+```sh
+npm test
+npm run lint
+npm run build
+```
