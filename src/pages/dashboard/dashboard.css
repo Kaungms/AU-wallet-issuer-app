@@ -336,6 +336,41 @@
   font-size: 9px;
 }
 
+.dashboard-issuance-unavailable {
+  min-height: 190px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  padding: 28px 22px;
+
+  color: #817672;
+}
+
+.dashboard-issuance-unavailable > svg {
+  flex-shrink: 0;
+  color: #a99e99;
+}
+
+.dashboard-issuance-unavailable strong {
+  display: block;
+  margin-bottom: 5px;
+
+  color: #403735;
+
+  font-size: 11px;
+}
+
+.dashboard-issuance-unavailable p {
+  max-width: 360px;
+  margin: 0;
+
+  font-size: 10px;
+  line-height: 1.5;
+}
+
 /* =====================================
    QUICK ACTIONS
 ===================================== */

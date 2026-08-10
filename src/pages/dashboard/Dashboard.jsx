@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   BarChart3,
   CheckCircle2,
@@ -7,81 +8,48 @@ import {
   Wallet,
 } from "lucide-react";
 
+import { getIssuerConnectionSummary } from "../../api/issuerApi";
 import "./dashboard.css";
 
-/*
-  Frontend sample data only.
-
-  Later, your backend developer can replace
-  these values with real API data.
-*/
-
-const dashboardStats = {
-  walletConnected: 1874,
-  transcriptsIssued: 1328,
-};
-
-const recentWalletActivity = [
-  {
-    id: 1,
-    studentId: "6611037",
-    name: "Kaung Myat San",
-    type: "wallet-created",
-    time: "2 minutes ago",
-  },
-  {
-    id: 2,
-    studentId: "6611052",
-    name: "Narin Wong",
-    type: "verified",
-    time: "8 minutes ago",
-  },
-  {
-    id: 3,
-    studentId: "6611088",
-    name: "Mary Lee",
-    type: "wallet-created",
-    time: "14 minutes ago",
-  },
-  {
-    id: 4,
-    studentId: "6611104",
-    name: "Ananda Chen",
-    type: "verified",
-    time: "21 minutes ago",
-  },
-  {
-    id: 5,
-    studentId: "6611120",
-    name: "Pimchanok Arun",
-    type: "wallet-created",
-    time: "35 minutes ago",
-  },
-];
-
-const transcriptAnalytics = [
-  {
-    graduationDate: "24 May 2026",
-    issued: 391,
-  },
-  {
-    graduationDate: "18 October 2026",
-    issued: 301,
-  },
-  {
-    graduationDate: "24 January 2027",
-    issued: 244,
-  },
-  {
-    graduationDate: "25 May 2027",
-    issued: 178,
-  },
-];
-
 function Dashboard({ onPageChange }) {
-  const highestIssued = Math.max(
-    ...transcriptAnalytics.map((item) => item.issued)
-  );
+  const [verifiedConnectionCount, setVerifiedConnectionCount] = useState(null);
+  const [recentVerifications, setRecentVerifications] = useState([]);
+  const [connectionSummaryStatus, setConnectionSummaryStatus] =
+    useState("loading");
+
+  useEffect(() => {
+    const abortController = new AbortController();
+
+    async function loadConnectionSummary() {
+      try {
+        const connectionSummary = await getIssuerConnectionSummary({
+          signal: abortController.signal,
+        });
+
+        setVerifiedConnectionCount(
+          connectionSummary.verifiedConnectionCount,
+        );
+        setRecentVerifications(connectionSummary.recentVerifications);
+        setConnectionSummaryStatus("success");
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          console.error("Unable to load issuer connection summary.", error);
+          setConnectionSummaryStatus("error");
+        }
+      }
+    }
+
+    loadConnectionSummary();
+
+    return () => abortController.abort();
+  }, []);
+
+  const walletConnectedValue =
+    connectionSummaryStatus === "success"
+      ? verifiedConnectionCount
+      : connectionSummaryStatus === "error"
+        ? "Unavailable"
+        : "Loading…";
 
   return (
     <div className="dashboard-page">
@@ -98,8 +66,8 @@ function Dashboard({ onPageChange }) {
           <h1>Dashboard</h1>
 
           <p>
-            Monitor wallet connections and transcript
-            issuance activity.
+            Monitor verified wallet connections and prepare academic records
+            for future credential issuance.
           </p>
         </div>
       </div>
@@ -112,15 +80,15 @@ function Dashboard({ onPageChange }) {
         <DashboardStatCard
           icon={Wallet}
           label="Wallet Connected"
-          value={dashboardStats.walletConnected}
+          value={walletConnectedValue}
           description="Students with connected holder wallets"
         />
 
         <DashboardStatCard
           icon={FileCheck2}
           label="Transcripts Issued"
-          value={dashboardStats.transcriptsIssued}
-          description="Transcript credentials successfully issued"
+          value="Not available"
+          description="Credential issuance service is not connected"
         />
       </section>
 
@@ -137,8 +105,8 @@ function Dashboard({ onPageChange }) {
               <h2>Recent Wallet Activity</h2>
 
               <p>
-                Latest wallet connections and automatic
-                student verification results.
+                Latest automatic student verification
+                results.
               </p>
             </div>
 
@@ -146,12 +114,29 @@ function Dashboard({ onPageChange }) {
           </div>
 
           <div className="wallet-activity-list">
-            {recentWalletActivity.map((activity) => (
-              <WalletActivityItem
-                key={activity.id}
-                activity={activity}
+            {connectionSummaryStatus === "loading" && (
+              <WalletActivityState message="Loading recent verifications…" />
+            )}
+
+            {connectionSummaryStatus === "error" && (
+              <WalletActivityState
+                message="Recent verifications could not be loaded."
+                isError
               />
-            ))}
+            )}
+
+            {connectionSummaryStatus === "success" &&
+              recentVerifications.length === 0 && (
+                <WalletActivityState message="No recent verifications." />
+              )}
+
+            {connectionSummaryStatus === "success" &&
+              recentVerifications.map((verification) => (
+                <WalletActivityItem
+                  key={`${verification.programCode}-${verification.verifiedAt}`}
+                  verification={verification}
+                />
+              ))}
           </div>
         </section>
 
@@ -173,39 +158,15 @@ function Dashboard({ onPageChange }) {
             <BarChart3 size={20} />
           </div>
 
-          <div className="transcript-analytics">
-            {transcriptAnalytics.map((item) => {
-              const percentage =
-                (item.issued / highestIssued) * 100;
-
-              return (
-                <div
-                  className="transcript-analytics-item"
-                  key={item.graduationDate}
-                >
-                  <div className="analytics-item-heading">
-                    <span>{item.graduationDate}</span>
-
-                    <strong>
-                      {item.issued.toLocaleString()}
-                    </strong>
-                  </div>
-
-                  <div className="analytics-bar">
-                    <div
-                      className="analytics-bar-value"
-                      style={{
-                        width: `${percentage}%`,
-                      }}
-                    />
-                  </div>
-
-                  <span className="analytics-item-caption">
-                    Transcripts issued
-                  </span>
-                </div>
-              );
-            })}
+          <div className="dashboard-issuance-unavailable">
+            <FileCheck2 size={22} />
+            <div>
+              <strong>Credential issuance analytics unavailable</strong>
+              <p>
+                Transcript totals and analytics will appear when supported
+                issuer backend endpoints are available.
+              </p>
+            </div>
           </div>
         </section>
       </div>
@@ -220,10 +181,10 @@ function Dashboard({ onPageChange }) {
             Quick Actions
           </p>
 
-          <h2>Issue Transcript</h2>
+          <h2>Transcript Issuance</h2>
 
-          <p>
-            Start a single or batch transcript issuance.
+          <p id="transcript-actions-unavailable">
+            Prepare a single or batch selection for a future issuance service.
           </p>
         </div>
 
@@ -231,23 +192,19 @@ function Dashboard({ onPageChange }) {
           <button
             type="button"
             className="dashboard-secondary-action"
-            onClick={() =>
-              onPageChange?.("issue-transcript","single")
-            }
+            onClick={() => onPageChange?.("issue-transcript", "single")}
           >
             <FilePlus2 size={17} />
-            Single Issuance
+            Single Preparation
           </button>
 
           <button
             type="button"
             className="dashboard-primary-action"
-            onClick={() =>
-              onPageChange?.("issue-transcript","batch")
-            }
+            onClick={() => onPageChange?.("issue-transcript", "batch")}
           >
             <Users size={17} />
-            Batch Issuance
+            Batch Preparation
           </button>
         </div>
       </section>
@@ -282,49 +239,59 @@ function DashboardStatCard({
   );
 }
 
-function WalletActivityItem({ activity }) {
-  const isWalletCreated =
-    activity.type === "wallet-created";
-
+function WalletActivityItem({ verification }) {
   return (
     <div className="wallet-activity-item">
-      <div
-        className={`wallet-activity-icon ${
-          isWalletCreated
-            ? "wallet-activity-created"
-            : "wallet-activity-verified"
-        }`}
-      >
-        {isWalletCreated ? (
-          <Wallet size={16} />
-        ) : (
-          <CheckCircle2 size={16} />
-        )}
+      <div className="wallet-activity-icon wallet-activity-verified">
+        <CheckCircle2 size={16} />
       </div>
 
       <div className="wallet-activity-content">
         <div>
-          <strong>
-            {activity.name}
-          </strong>
+          <strong>{verification.major}</strong>
 
-          <span>
-            {activity.studentId}
-          </span>
+          <span>Verified wallet connection</span>
         </div>
-
-        <p>
-          {isWalletCreated
-            ? "Created and connected a holder wallet."
-            : "Student identity automatically verified."}
-        </p>
       </div>
 
-      <span className="wallet-activity-time">
-        {activity.time}
-      </span>
+      <time
+        className="wallet-activity-time"
+        dateTime={verification.verifiedAt}
+      >
+        {formatVerifiedAt(verification.verifiedAt)}
+      </time>
     </div>
   );
+}
+
+function WalletActivityState({ message, isError = false }) {
+  return (
+    <div
+      className="wallet-activity-item"
+      role={isError ? "alert" : "status"}
+    >
+      <div className="wallet-activity-icon">
+        <Wallet size={16} />
+      </div>
+
+      <div className="wallet-activity-content">
+        <p>{message}</p>
+      </div>
+    </div>
+  );
+}
+
+function formatVerifiedAt(value) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Date unavailable";
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
 }
 
 export default Dashboard;
