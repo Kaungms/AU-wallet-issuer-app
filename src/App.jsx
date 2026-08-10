@@ -1,26 +1,27 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import MainLayout from "./components/layout/MainLayout";
 
 import Dashboard from "./pages/dashboard/Dashboard";
 import IssueTranscript from "./pages/issue-transcript/IssueTranscript";
+import StudentData from "./pages/student-data/StudentData";
 
 const pageInformation = {
   dashboard: {
     title: "Dashboard",
     description:
-      "Monitor student wallet readiness and transcript issuance preparation.",
+      "Monitor verified wallet connections and automatic verification activity.",
   },
 
   students: {
     title: "Student Data",
-    description: "Search and review official AU student records.",
+    description: "Find students and prepare academic records for review.",
   },
 
   "issue-transcript": {
     title: "Issue Transcript",
     description:
-      "Review official academic records and prepare transcript credentials for issuance.",
+      "Review academic records and prepare a pre-issuance selection.",
   },
 
   settings: {
@@ -30,14 +31,52 @@ const pageInformation = {
 };
 
 function App() {
-  const [activePage, setActivePage] = useState("dashboard");
-  const [issueMode, setIssueMode] = useState("single"); // New state for issue mode
-  const handlePageChange = (page, mode = null) => {
-    if (page === "issue-transcript" && mode) {
-      setIssueMode(mode);
+  const [initialNavigation] = useState(readNavigationFromUrl);
+  const [activePage, setActivePage] = useState(initialNavigation.page);
+  const [issueMode, setIssueMode] = useState(initialNavigation.mode);
+  const [reviewStudentId, setReviewStudentId] = useState(
+    initialNavigation.studentId,
+  );
+
+  useEffect(() => {
+    const syncNavigationFromUrl = () => {
+      const navigation = readNavigationFromUrl();
+
+      setActivePage(navigation.page);
+      setIssueMode(navigation.mode);
+      setReviewStudentId(navigation.studentId);
+    };
+
+    if (!window.location.hash) {
+      window.history.replaceState(null, "", buildNavigationHash({
+        page: initialNavigation.page,
+        mode: initialNavigation.mode,
+        studentId: initialNavigation.studentId,
+      }));
     }
 
+    window.addEventListener("popstate", syncNavigationFromUrl);
+
+    return () => window.removeEventListener("popstate", syncNavigationFromUrl);
+  }, [initialNavigation]);
+
+  const handlePageChange = (page, mode = null, studentId = "") => {
+    const nextMode = page === "issue-transcript" ? mode ?? issueMode : issueMode;
+    const nextStudentId = page === "issue-transcript" ? studentId : "";
+
+    setIssueMode(nextMode);
+    setReviewStudentId(nextStudentId);
     setActivePage(page);
+
+    const nextHash = buildNavigationHash({
+      page,
+      mode: nextMode,
+      studentId: nextStudentId,
+    });
+
+    if (window.location.hash !== nextHash) {
+      window.history.pushState(null, "", nextHash);
+    }
   };
 
   const currentPage = pageInformation[activePage] || pageInformation.dashboard;
@@ -48,10 +87,28 @@ function App() {
         return <Dashboard onPageChange={handlePageChange} />;
 
       case "students":
-        return <p>Student Data page will be added later.</p>;
+        return (
+          <StudentData
+            onReviewStudent={(studentId) =>
+              handlePageChange("issue-transcript", "single", studentId)
+            }
+          />
+        );
 
       case "issue-transcript":
-        return <IssueTranscript initialMode={issueMode} />;
+        return (
+          <IssueTranscript
+            key={`${issueMode}:${reviewStudentId}`}
+            initialMode={issueMode}
+            initialStudentId={reviewStudentId}
+            onModeChange={(mode) =>
+              handlePageChange("issue-transcript", mode)
+            }
+            onStudentChange={(studentId) =>
+              handlePageChange("issue-transcript", "single", studentId)
+            }
+          />
+        );
 
       case "settings":
         return <p>Settings page will be added later.</p>;
@@ -71,6 +128,35 @@ function App() {
       {renderPage()}
     </MainLayout>
   );
+}
+
+function readNavigationFromUrl() {
+  const hashValue = window.location.hash.replace(/^#\/?/, "");
+  const [routeValue = "", queryValue = ""] = hashValue.split("?");
+  const page = Object.hasOwn(pageInformation, routeValue)
+    ? routeValue
+    : "dashboard";
+  const query = new URLSearchParams(queryValue);
+  const mode = query.get("mode") === "batch" ? "batch" : "single";
+  const studentId = page === "issue-transcript"
+    ? query.get("student")?.trim() ?? ""
+    : "";
+
+  return { page, mode, studentId };
+}
+
+function buildNavigationHash({ page, mode, studentId }) {
+  if (page !== "issue-transcript") {
+    return `#/${page}`;
+  }
+
+  const query = new URLSearchParams({ mode });
+
+  if (studentId) {
+    query.set("student", studentId);
+  }
+
+  return `#/issue-transcript?${query.toString()}`;
 }
 
 export default App;

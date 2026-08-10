@@ -1,49 +1,15 @@
 import { Bell, ChevronDown, Search } from "lucide-react";
 
-const pageTitles = {
-  dashboard: {
-    title: "Dashboard",
-    description: "Overview of credential issuing activities.",
-  },
-
-  records: {
-    title: "Student Records",
-    description: "Review and manage student academic records.",
-  },
-
-  claims: {
-    title: "Claims Review",
-    description: "Review credential claims submitted by students.",
-  },
-
-  offer: {
-    title: "Credential Offer",
-    description: "Create and send new credential offers.",
-  },
-
-  credentials: {
-    title: "Credentials",
-    description: "Track issued and pending credentials.",
-  },
-
-  settings: {
-    title: "Settings",
-    description: "Manage issuer profile and system configuration.",
-  },
-};
-
-function Header({ activePage }) {
-  const currentPage = pageTitles[activePage] ?? pageTitles.dashboard;
-
+function Header({ title, description }) {
   return (
     <header className="main-header">
       <div>
         <p className="main-header-label">Registrar Workspace</p>
 
-        <h2 className="main-header-title">{currentPage.title}</h2>
+        <h2 className="main-header-title">{title}</h2>
 
         <p className="main-header-description">
-          {currentPage.description}
+          {description}
         </p>
       </div>
 

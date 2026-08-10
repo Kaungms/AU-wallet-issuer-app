@@ -37,6 +37,27 @@
   line-height: 1.6;
 }
 
+.batch-sample-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin-bottom: 20px;
+  padding: 12px 14px;
+
+  color: #795f20;
+  background: #fbf1de;
+
+  border: 1px solid #ead8aa;
+  border-radius: 9px;
+
+  font-size: 10px;
+}
+
+.batch-sample-notice strong {
+  flex-shrink: 0;
+}
+
 /* =====================================
    GENERAL CARDS
 ===================================== */
@@ -231,6 +252,11 @@
 .batch-empty-state p {
   margin: 0;
   font-size: 11px;
+}
+
+.batch-state-error {
+  color: #a42d2d;
+  border-color: #efd3d3;
 }
 
 /* =====================================
@@ -677,6 +703,11 @@
 }
 
 @media (max-width: 650px) {
+  .batch-sample-notice {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .batch-filter-form {
     grid-template-columns: 1fr;
   }

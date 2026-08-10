@@ -40,6 +40,27 @@
   line-height: 1.6;
 }
 
+.issue-sample-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin-bottom: 20px;
+  padding: 12px 14px;
+
+  color: #795f20;
+  background: #fbf1de;
+
+  border: 1px solid #ead8aa;
+  border-radius: 9px;
+
+  font-size: 10px;
+}
+
+.issue-sample-notice strong {
+  flex-shrink: 0;
+}
+
 /* ========================================
    SINGLE / BATCH TABS
 ======================================== */
@@ -336,6 +357,12 @@
 .form-error-message {
   margin: 9px 0 0;
   color: #b32626;
+  font-size: 10px;
+}
+
+.issue-form-note {
+  margin: 9px 0 0;
+  color: #938884;
   font-size: 10px;
 }
 
@@ -735,6 +762,46 @@
   text-transform: uppercase;
 }
 
+.course-result-type {
+  display: inline-block;
+  margin-left: 8px;
+  color: #9a908c;
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.academic-preview-empty {
+  padding: 24px;
+  color: #817672;
+  background: #fcfaf9;
+  border: 1px dashed #ddd3cf;
+  border-radius: 10px;
+  font-size: 10px;
+  text-align: center;
+}
+
+.unassigned-results-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 15px 18px;
+  background: #fcfaf9;
+}
+
+.unassigned-results-heading h3 {
+  margin: 0;
+  color: #2c2523;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.unassigned-results-heading span {
+  color: #9a908c;
+  font-size: 9px;
+}
+
 .semester-course-grade {
   min-width: 36px;
   color: #cc1919;
@@ -777,6 +844,11 @@
 
   font-size: 16px;
   font-weight: 700;
+}
+
+.issuance-icon-warning {
+  color: #a06424;
+  background: #fbefdc;
 }
 
 .issuance-content h2 {
@@ -911,6 +983,11 @@
 }
 
 @media (max-width: 720px) {
+  .issue-sample-notice {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .issue-mode-tabs {
     width: 100%;
   }
