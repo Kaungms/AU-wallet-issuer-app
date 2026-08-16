@@ -668,6 +668,28 @@
   cursor: not-allowed;
 }
 
+.batch-issuance-result {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+
+  margin: 0 22px 18px;
+  padding: 11px 13px;
+
+  color: #28744a;
+  background: #edf8f1;
+  border: 1px solid #c9e7d4;
+  border-radius: 8px;
+
+  font-size: 10px;
+}
+
+.batch-issuance-result-partial {
+  color: #96502b;
+  background: #fff5eb;
+  border-color: #f0d4b9;
+}
+
 /* =====================================
    RESPONSIVE
 ===================================== */

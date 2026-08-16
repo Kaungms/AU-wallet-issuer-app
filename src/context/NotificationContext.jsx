@@ -1,60 +1,16 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
 
+import { getIssuerConnectionSummary } from "../api/issuerApi";
+
 const NotificationContext = createContext(null);
 
-const INITIAL_NOTIFICATIONS = [
-  {
-    id: 1,
-    type: "verification",
-    title: "Automatic verification completed",
-    programCode: "BSCS",
-    major: "Computer Science",
-    verifiedAt: "2026-08-16T15:42:00",
-    read: false,
-  },
-  {
-    id: 2,
-    type: "verification",
-    title: "Automatic verification completed",
-    programCode: "BSIT",
-    major: "Information Technology",
-    verifiedAt: "2026-08-16T14:18:00",
-    read: false,
-  },
-  {
-    id: 3,
-    type: "batch-completed",
-    title: "Batch issuance completed",
-    message:
-      "391 transcript credentials were issued for the 24 May 2026 graduation group.",
-    createdAt: "2026-08-16T13:05:00",
-    read: false,
-    actionPage: "issued-transcripts",
-  },
-  {
-    id: 4,
-    type: "issuance-failure",
-    title: "Transcript issuance failed",
-    message:
-      "A transcript issuance operation could not be completed.",
-    createdAt: "2026-08-15T16:20:00",
-    read: true,
-  },
-  {
-    id: 5,
-    type: "system",
-    title: "Issuer service connection restored",
-    message:
-      "The credential issuer service is available again.",
-    createdAt: "2026-08-15T10:15:00",
-    read: true,
-  },
-];
+const VERIFICATION_REFRESH_INTERVAL = 30_000;
 
 function getStoredPreferences() {
   try {
@@ -82,10 +38,70 @@ function getStoredPreferences() {
 
 export function NotificationProvider({ children }) {
   const [notifications, setNotifications] =
-    useState(INITIAL_NOTIFICATIONS);
+    useState([]);
 
   const [preferences, setPreferences] =
     useState(getStoredPreferences);
+
+  useEffect(() => {
+    const abortController = new AbortController();
+
+    const loadVerificationNotifications = async () => {
+      try {
+        const { recentVerifications } = await getIssuerConnectionSummary({
+          signal: abortController.signal,
+        });
+
+        setNotifications((current) => {
+          const existingNotifications = new Map(
+            current.map((notification) => [notification.id, notification]),
+          );
+
+          const verificationNotifications = recentVerifications.map(
+            (verification) => {
+              const id = getVerificationNotificationId(verification);
+              const existing = existingNotifications.get(id);
+
+              return {
+                id,
+                type: "verification",
+                title: "Automatic verification completed",
+                programCode: verification.programCode,
+                major: verification.major,
+                verifiedAt: verification.verifiedAt,
+                read: existing?.read ?? false,
+              };
+            },
+          );
+
+          const fetchedIds = new Set(
+            verificationNotifications.map((notification) => notification.id),
+          );
+
+          return [
+            ...verificationNotifications,
+            ...current.filter((notification) => !fetchedIds.has(notification.id)),
+          ];
+        });
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          console.error("Unable to load verification notifications:", error);
+        }
+      }
+    };
+
+    loadVerificationNotifications();
+
+    const refreshInterval = window.setInterval(
+      loadVerificationNotifications,
+      VERIFICATION_REFRESH_INTERVAL,
+    );
+
+    return () => {
+      abortController.abort();
+      window.clearInterval(refreshInterval);
+    };
+  }, []);
 
   const updatePreference = (name, value) => {
     setPreferences((current) => {
@@ -179,6 +195,10 @@ export function NotificationProvider({ children }) {
       {children}
     </NotificationContext.Provider>
   );
+}
+
+function getVerificationNotificationId(verification) {
+  return `verification:${verification.programCode}:${verification.verifiedAt}`;
 }
 
 export function useNotifications() {
