@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { CheckCircle2, FileClock, Search, Wallet, XCircle } from "lucide-react";
 
 import {
+  createAcademicTranscriptVc,
   getStudentAcademicPreview,
   getStudentAcademicReview,
 } from "../../api/issuerApi";
@@ -23,7 +24,11 @@ function IssueTranscript({
 
   return (
     <div className="issue-transcript-wrapper">
-      <div className="issue-mode-tabs" role="tablist" aria-label="Preparation mode">
+      <div
+        className="issue-mode-tabs"
+        role="tablist"
+        aria-label="Preparation mode"
+      >
         <button
           type="button"
           role="tab"
@@ -79,7 +84,9 @@ function SingleTranscript({ initialStudentId, onStudentChange }) {
     } catch (requestError) {
       if (requestError.name !== "AbortError") {
         setStudent(null);
-        setError(requestError.message || "Academic review could not be loaded.");
+        setError(
+          requestError.message || "Academic review could not be loaded.",
+        );
         setStatus(requestError.status === 404 ? "empty" : "error");
       }
     }
@@ -104,7 +111,9 @@ function SingleTranscript({ initialStudentId, onStudentChange }) {
       } catch (requestError) {
         if (requestError.name !== "AbortError") {
           setStudent(null);
-          setError(requestError.message || "Academic review could not be loaded.");
+          setError(
+            requestError.message || "Academic review could not be loaded.",
+          );
           setStatus(requestError.status === 404 ? "empty" : "error");
         }
       }
@@ -200,7 +209,10 @@ function SingleTranscript({ initialStudentId, onStudentChange }) {
       </section>
 
       {status === "loading" && (
-        <ReviewState title="Loading student…" message="Loading academic preview." />
+        <ReviewState
+          title="Loading student…"
+          message="Loading academic preview."
+        />
       )}
 
       {status === "error" && (
@@ -249,6 +261,29 @@ async function fetchStudentReview(studentNumber, signal) {
 
 function StudentAcademicReview({ student }) {
   const walletVerified = student.walletEligibility === "verified";
+  const [issuanceStatus, setIssuanceStatus] = useState("idle");
+  const [issuanceError, setIssuanceError] = useState("");
+  const [issuanceResult, setIssuanceResult] = useState(null);
+
+  const handleCreateVc = async () => {
+    setIssuanceStatus("loading");
+    setIssuanceError("");
+    setIssuanceResult(null);
+
+    try {
+      const createdVc = await createAcademicTranscriptVc(student.studentNumber);
+
+      setIssuanceResult(createdVc);
+      setIssuanceStatus("success");
+    } catch (requestError) {
+      if (requestError.name !== "AbortError") {
+        setIssuanceStatus("error");
+        setIssuanceError(
+          requestError.message || "The VC could not be created.",
+        );
+      }
+    }
+  };
 
   return (
     <>
@@ -257,7 +292,7 @@ function StudentAcademicReview({ student }) {
         <div className="progress-line progress-line-active" />
         <ProgressStep number="2" title="Review academics" active />
         <div className="progress-line" />
-        <ProgressStep number="3" title="Issuance unavailable" />
+        <ProgressStep number="3" title="Create VC" />
       </section>
 
       <section className="issue-sample-notice" role="note">
@@ -290,12 +325,15 @@ function StudentAcademicReview({ student }) {
             <InfoRow label="Faculty" value={student.facultyName} />
             <InfoRow label="Degree" value={student.degreeName} />
             <InfoRow label="Major" value={student.major} />
+            <InfoRow label="Concentration" value={student.majorConcentration} />
             <InfoRow
-              label="Concentration"
-              value={student.majorConcentration}
+              label="Admission date"
+              value={formatDate(student.admissionDate)}
             />
-            <InfoRow label="Admission date" value={formatDate(student.admissionDate)} />
-            <InfoRow label="Graduation date" value={formatDate(student.graduationDate)} />
+            <InfoRow
+              label="Graduation date"
+              value={formatDate(student.graduationDate)}
+            />
             <InfoRow
               label="Academic status"
               value={formatStatus(student.academicStatus)}
@@ -359,10 +397,7 @@ function StudentAcademicReview({ student }) {
               label="Connection status"
               value={walletVerified ? "Verified" : "Not verified"}
             />
-            <InfoRow
-              label="Pre-issuance selection"
-              value="Available"
-            />
+            <InfoRow label="Pre-issuance selection" value="Available" />
           </div>
         </section>
       </div>
@@ -371,7 +406,9 @@ function StudentAcademicReview({ student }) {
         <div className="card-heading transcript-heading">
           <div>
             <h2>Academic Record</h2>
-            <p>Review term and course results before any future issuance step.</p>
+            <p>
+              Review term and course results before any future issuance step.
+            </p>
           </div>
           <div className="academic-summary">
             <div>
@@ -395,7 +432,9 @@ function StudentAcademicReview({ student }) {
               />
             ))
           ) : (
-            <div className="academic-preview-empty">No term results recorded.</div>
+            <div className="academic-preview-empty">
+              No term results recorded.
+            </div>
           )}
 
           {student.unassignedResults.length > 0 && (
@@ -418,11 +457,11 @@ function StudentAcademicReview({ student }) {
             )}
           </div>
           <div>
-            <h2>Pre-issuance Selection Ready</h2>
+            <h2>Ready to create VC</h2>
             <p>
-              The reviewed student and academic record remain selected.
-              Credential generation, signing, issuance, and delivery are not
-              implemented in this frontend.
+              The reviewed student and academic record remain selected. The
+              button below now calls the backend VC creation route for this
+              exact student record.
             </p>
           </div>
         </div>
@@ -430,10 +469,33 @@ function StudentAcademicReview({ student }) {
         <button
           className="issue-credential-button"
           type="button"
-          disabled
+          disabled={issuanceStatus === "loading"}
+          onClick={handleCreateVc}
         >
-          Credential issuance unavailable
+          {issuanceStatus === "loading" ? "Creating VC…" : "Create VC"}
         </button>
+
+        {issuanceStatus === "success" && (
+          <div className="issuance-success-message" role="status">
+            <div className="success-checkmark">✓</div>
+            <div>
+              <h2>VC created for {student.fullName}</h2>
+              <p>
+                Student {student.studentNumber} was sent to the backend VC
+                route.
+                {issuanceResult?.credentialId
+                  ? ` Credential ID: ${issuanceResult.credentialId}.`
+                  : ""}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {issuanceStatus === "error" && (
+          <div className="issuance-error-message" role="alert">
+            {issuanceError}
+          </div>
+        )}
       </section>
     </>
   );
@@ -489,7 +551,9 @@ function SemesterSection({ term, defaultOpen = false }) {
         onClick={() => setIsOpen((current) => !current)}
       >
         <div className="semester-title-area">
-          <span className={`semester-arrow ${isOpen ? "semester-arrow-open" : ""}`}>
+          <span
+            className={`semester-arrow ${isOpen ? "semester-arrow-open" : ""}`}
+          >
             ›
           </span>
           <div>

@@ -23,10 +23,7 @@ export class IssuerApiError extends Error {
   }
 }
 
-export async function getIssuerConnectionSummary({
-  signal,
-  apiBaseUrl,
-} = {}) {
+export async function getIssuerConnectionSummary({ signal, apiBaseUrl } = {}) {
   const envelope = await issuerRequest("/issuer/dashboard/connection-summary", {
     signal,
     apiBaseUrl,
@@ -66,7 +63,10 @@ export async function getIssuerStudents({
   const normalizedQuery = typeof q === "string" ? q.trim() : "";
 
   if (normalizedQuery && normalizedQuery.length < 2) {
-    throw invalidRequest("Student search must contain at least two characters.", "q");
+    throw invalidRequest(
+      "Student search must contain at least two characters.",
+      "q",
+    );
   }
 
   validatePagination(page, pageSize);
@@ -95,7 +95,10 @@ export async function getStudentAcademicReview(
   studentNumber,
   { signal, apiBaseUrl } = {},
 ) {
-  const encodedStudentNumber = encodePathSegment(studentNumber, "studentNumber");
+  const encodedStudentNumber = encodePathSegment(
+    studentNumber,
+    "studentNumber",
+  );
 
   const envelope = await issuerRequest(
     `/issuer/students/${encodedStudentNumber}/academic-review`,
@@ -111,7 +114,10 @@ export async function getStudentAcademicPreview(
   studentNumber,
   { signal, apiBaseUrl } = {},
 ) {
-  const encodedStudentNumber = encodePathSegment(studentNumber, "studentNumber");
+  const encodedStudentNumber = encodePathSegment(
+    studentNumber,
+    "studentNumber",
+  );
 
   const envelope = await issuerRequest(
     `/issuer/students/${encodedStudentNumber}/academic-preview`,
@@ -137,6 +143,22 @@ export async function getStudentAcademicPreview(
   }
 
   return envelope.data;
+}
+
+export async function createAcademicTranscriptVc(
+  studentNumber,
+  { signal, apiBaseUrl } = {},
+) {
+  const envelope = await issuerRequest("/vc/academic-transcripts/create", {
+    method: "POST",
+    signal,
+    apiBaseUrl,
+    body: {
+      studentNumber: requireNonEmptyString(studentNumber, "studentNumber"),
+    },
+  });
+
+  return requireObject(envelope.data, "academic transcript VC data");
 }
 
 export async function getGraduatingStudents({
@@ -190,27 +212,38 @@ export async function resolveWalletEligibility(
   { signal, apiBaseUrl } = {},
 ) {
   if (!Array.isArray(studentNumbers) || studentNumbers.length < 1) {
-    throw invalidRequest("Provide at least one student number.", "studentNumbers");
+    throw invalidRequest(
+      "Provide at least one student number.",
+      "studentNumbers",
+    );
   }
 
   if (studentNumbers.length > 100) {
-    throw invalidRequest("Provide no more than 100 student numbers.", "studentNumbers");
+    throw invalidRequest(
+      "Provide no more than 100 student numbers.",
+      "studentNumbers",
+    );
   }
 
   const normalizedStudentNumbers = studentNumbers.map((studentNumber) =>
     requireNonEmptyString(studentNumber, "studentNumbers"),
   );
 
-  if (new Set(normalizedStudentNumbers).size !== normalizedStudentNumbers.length) {
+  if (
+    new Set(normalizedStudentNumbers).size !== normalizedStudentNumbers.length
+  ) {
     throw invalidRequest("Student numbers must be unique.", "studentNumbers");
   }
 
-  const envelope = await issuerRequest("/issuer/students/wallet-eligibility:resolve", {
-    method: "POST",
-    signal,
-    apiBaseUrl,
-    body: { studentNumbers: normalizedStudentNumbers },
-  });
+  const envelope = await issuerRequest(
+    "/issuer/students/wallet-eligibility:resolve",
+    {
+      method: "POST",
+      signal,
+      apiBaseUrl,
+      body: { studentNumbers: normalizedStudentNumbers },
+    },
+  );
 
   if (!Array.isArray(envelope.data?.results)) {
     throw invalidResponse("Wallet eligibility data has an invalid format.");
@@ -270,7 +303,9 @@ async function issuerRequest(
 
   if (!response.ok) {
     const meta = isPlainObject(responseBody?.meta) ? responseBody.meta : {};
-    const errorData = isPlainObject(responseBody?.error) ? responseBody.error : {};
+    const errorData = isPlainObject(responseBody?.error)
+      ? responseBody.error
+      : {};
     const details = Array.isArray(errorData.details) ? errorData.details : [];
 
     throw new IssuerApiError(
@@ -278,14 +313,14 @@ async function issuerRequest(
         ? errorData.message
         : typeof responseBody?.message === "string"
           ? responseBody.message
-        : `Issuer API request failed with status ${response.status}.`,
+          : `Issuer API request failed with status ${response.status}.`,
       {
         code:
           typeof errorData.code === "string" && errorData.code
             ? errorData.code
             : typeof meta.code === "string" && meta.code
               ? meta.code
-            : "ISSUER_API_REQUEST_FAILED",
+              : "ISSUER_API_REQUEST_FAILED",
         status: response.status,
         details,
         fieldErrors: isPlainObject(meta.fieldErrors) ? meta.fieldErrors : {},
@@ -299,7 +334,9 @@ async function issuerRequest(
     typeof responseBody.message !== "string" ||
     !isPlainObject(responseBody.meta)
   ) {
-    throw invalidResponse("Issuer API response envelope has an invalid format.");
+    throw invalidResponse(
+      "Issuer API response envelope has an invalid format.",
+    );
   }
 
   return responseBody;
@@ -334,7 +371,10 @@ function buildApiUrl(apiBaseUrl, path, query = {}) {
   try {
     url = new URL(`${baseUrl}/${path.replace(/^\/+/, "")}`);
   } catch {
-    throw invalidRequest("VITE_API_BASE_URL must be a valid absolute URL.", "apiBaseUrl");
+    throw invalidRequest(
+      "VITE_API_BASE_URL must be a valid absolute URL.",
+      "apiBaseUrl",
+    );
   }
 
   Object.entries(query).forEach(([key, value]) => {
@@ -352,13 +392,10 @@ function encodePathSegment(value, fieldName) {
 
 function requireNonEmptyString(value, fieldName, override = {}) {
   if (typeof value !== "string" || !value.trim()) {
-    throw new IssuerApiError(
-      override.message ?? `${fieldName} is required.`,
-      {
-        code: override.code ?? "INVALID_REQUEST",
-        fieldErrors: { [fieldName]: "Required" },
-      },
-    );
+    throw new IssuerApiError(override.message ?? `${fieldName} is required.`, {
+      code: override.code ?? "INVALID_REQUEST",
+      fieldErrors: { [fieldName]: "Required" },
+    });
   }
 
   return value.trim();
