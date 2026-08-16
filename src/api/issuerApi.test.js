@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
 
 import {
+  createAcademicTranscriptVc,
   getGraduatingStudents,
   getIssuerConnectionSummary,
   getIssuerPrograms,
@@ -86,7 +87,8 @@ test("loads program options for the selected faculty", async () => {
         programs: [
           {
             facultyCode: "VMES",
-            facultyName: "Vincent Mary School of Engineering, Science and Technology",
+            facultyName:
+              "Vincent Mary School of Engineering, Science and Technology",
             programCode: "SYN-VMES-AIT",
             degreeName: "Bachelor of Science",
             major: "Applied Informatics",
@@ -154,6 +156,41 @@ test("builds the student list, review, and preview routes without extra calls", 
     "http://backend.test:3000/issuer/students/6512345/academic-preview",
   );
   assert.equal(requestUrls.length, 3);
+});
+
+test("creates an academic transcript VC for the selected student", async () => {
+  let request;
+  globalThis.fetch = async (url, options) => {
+    request = { url, options };
+
+    return jsonResponse({
+      data: {
+        credentialId: "vc_123",
+        studentNumber: "6499002",
+      },
+      message: "Academic transcript VC created.",
+      meta: {},
+    });
+  };
+
+  const result = await createAcademicTranscriptVc("6499002", {
+    apiBaseUrl: API_BASE_URL,
+  });
+
+  assert.deepEqual(result, {
+    credentialId: "vc_123",
+    studentNumber: "6499002",
+  });
+  assert.equal(
+    request.url,
+    "http://backend.test:3000/vc/academic-transcripts/create",
+  );
+  assert.equal(request.options.method, "POST");
+  assert.equal(request.options.headers["Content-Type"], "application/json");
+  assert.equal("Authorization" in request.options.headers, false);
+  assert.deepEqual(JSON.parse(request.options.body), {
+    studentNumber: "6499002",
+  });
 });
 
 test("sends unique student numbers to wallet eligibility resolution", async () => {

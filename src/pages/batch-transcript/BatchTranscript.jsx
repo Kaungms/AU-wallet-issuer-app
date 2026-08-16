@@ -8,14 +8,17 @@ import {
 } from "lucide-react";
 
 import {
+  createAcademicTranscriptVc,
   getGraduatingStudents,
   getIssuerPrograms,
   getIssuerStudents,
   resolveWalletEligibility,
 } from "../../api/issuerApi";
+import { useNotifications } from "../../context/NotificationContext";
 import "./batch-transcript.css";
 
 function BatchTranscript() {
+  const { addNotification } = useNotifications();
   const [graduationYear, setGraduationYear] = useState("");
   const [facultyCode, setFacultyCode] = useState("");
   const [programCode, setProgramCode] = useState("");
@@ -28,6 +31,8 @@ function BatchTranscript() {
   const [walletFilter, setWalletFilter] = useState("all");
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
+  const [issuanceStatus, setIssuanceStatus] = useState("idle");
+  const [issuanceSummary, setIssuanceSummary] = useState(null);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -89,13 +94,6 @@ function BatchTranscript() {
     return () => abortController.abort();
   }, [facultyCode]);
 
-  const selectedFaculty = facultyOptions.find(
-    (faculty) => faculty.code === facultyCode,
-  );
-  const selectedProgram = programOptions.find(
-    (program) => program.programCode === programCode,
-  );
-
   const connectedStudents = useMemo(
     () => students.filter((student) => student.walletEligibility === "verified"),
     [students],
@@ -135,6 +133,8 @@ function BatchTranscript() {
     setWalletFilter("all");
     setStatus("idle");
     setError("");
+    setIssuanceStatus("idle");
+    setIssuanceSummary(null);
   };
 
   const handleGraduationYearChange = (event) => {
@@ -156,6 +156,9 @@ function BatchTranscript() {
 
   const handleFindStudents = async (event) => {
     event.preventDefault();
+
+    setIssuanceStatus("idle");
+    setIssuanceSummary(null);
 
     if (!graduationYear || !facultyCode || !programCode) {
       setError("Select a graduation year, faculty, and program.");
@@ -193,7 +196,6 @@ function BatchTranscript() {
           }),
         );
 
-        // eslint-disable-next-line no-await-in-loop
         const dailyResults = await Promise.all(searchPromises);
         const studentsInChunk = dailyResults.flatMap(
           (result) => result?.students ?? [],
@@ -246,11 +248,16 @@ function BatchTranscript() {
   };
 
   const handleStudentToggle = (student) => {
+    if (issuanceStatus === "loading") {
+      return;
+    }
+
     setSelectedIds((current) =>
       current.includes(student.studentNumber)
         ? current.filter((id) => id !== student.studentNumber)
         : [...current, student.studentNumber],
     );
+    setIssuanceSummary(null);
   };
 
   const handleSelectAllVisible = () => {
@@ -261,6 +268,53 @@ function BatchTranscript() {
     setSelectedIds((current) => [
       ...new Set([...current, ...visibleStudentIds]),
     ]);
+    setIssuanceSummary(null);
+  };
+
+  const handleCreateBatchVcs = async () => {
+    if (selectedStudents.length === 0 || issuanceStatus === "loading") {
+      return;
+    }
+
+    setIssuanceStatus("loading");
+    setIssuanceSummary(null);
+
+    const results = await Promise.all(
+      selectedStudents.map(async (student) => {
+        try {
+          await createAcademicTranscriptVc(student.studentNumber);
+          return { student, success: true };
+        } catch (requestError) {
+          return {
+            student,
+            success: false,
+            message: requestError.message || "The VC could not be created.",
+          };
+        }
+      }),
+    );
+
+    const failures = results.filter((result) => !result.success);
+
+    setIssuanceSummary({
+      created: results.length - failures.length,
+      failures,
+    });
+    setIssuanceStatus(failures.length > 0 ? "partial" : "success");
+
+    const createdCount = results.length - failures.length;
+
+    if (createdCount > 0) {
+      addNotification({
+        type: "batch-completed",
+        title: "Batch VC creation completed",
+        message:
+          failures.length > 0
+            ? `${createdCount} VCs were created and ${failures.length} could not be created.`
+            : `${createdCount} transcript VCs were created successfully.`,
+        actionPage: "issue-transcript",
+      });
+    }
   };
 
   return (
@@ -422,7 +476,11 @@ function BatchTranscript() {
                   type="button"
                   className="batch-secondary-button"
                   onClick={handleSelectAllVisible}
-                  disabled={filteredStudents.length === 0 || allVisibleSelected}
+                  disabled={
+                    filteredStudents.length === 0 ||
+                    allVisibleSelected ||
+                    issuanceStatus === "loading"
+                  }
                 >
                   Select All Results
                 </button>
@@ -431,8 +489,9 @@ function BatchTranscript() {
                   className="batch-clear-button"
                   onClick={() => {
                     setSelectedIds([]);
+                    setIssuanceSummary(null);
                   }}
-                  disabled={selectedIds.length === 0}
+                  disabled={selectedIds.length === 0 || issuanceStatus === "loading"}
                 >
                   Clear Selection
                 </button>
@@ -467,6 +526,7 @@ function BatchTranscript() {
                             type="checkbox"
                             aria-label={`Select ${student.fullName}`}
                             checked={selected}
+                            disabled={issuanceStatus === "loading"}
                             onChange={() => handleStudentToggle(student)}
                           />
                         </td>
@@ -504,12 +564,40 @@ function BatchTranscript() {
               <button
                 type="button"
                 className="batch-issue-button"
-                disabled
+                disabled={
+                  selectedStudents.length === 0 || issuanceStatus === "loading"
+                }
+                onClick={handleCreateBatchVcs}
               >
                 <Send size={17} />
-                Credential issuance unavailable
+                {issuanceStatus === "loading"
+                  ? "Creating VCs…"
+                  : `Create VCs for ${selectedStudents.length} selected`}
               </button>
             </div>
+
+            {issuanceSummary && (
+              <div
+                className={`batch-issuance-result ${
+                  issuanceSummary.failures.length > 0
+                    ? "batch-issuance-result-partial"
+                    : ""
+                }`}
+                role={issuanceSummary.failures.length > 0 ? "alert" : "status"}
+              >
+                <strong>
+                  {issuanceSummary.created} VC
+                  {issuanceSummary.created === 1 ? "" : "s"} created.
+                </strong>
+                {issuanceSummary.failures.length > 0 && (
+                  <span>
+                    {issuanceSummary.failures.length} failed: {issuanceSummary.failures
+                      .map((failure) => failure.student.studentNumber)
+                      .join(", ")}
+                  </span>
+                )}
+              </div>
+            )}
           </section>
         </>
       )}
@@ -592,20 +680,6 @@ function BatchState({ title, message, isError = false }) {
   );
 }
 
-function SummaryCard({ icon: Icon, value, label }) {
-  return (
-    <div className="batch-summary-card">
-      <div>
-        <strong>{value}</strong>
-        <span>{label}</span>
-      </div>
-      <div className="batch-summary-icon">
-        <Icon size={20} />
-      </div>
-    </div>
-  );
-}
-
 function WalletFilterButton({ label, count, active, onClick }) {
   return (
     <button
@@ -632,22 +706,6 @@ function WalletStatus({ status }) {
       <XCircle size={13} /> Not verified
     </span>
   );
-}
-
-function formatDate(value) {
-  if (!value) {
-    return "Not recorded";
-  }
-
-  const date = new Date(`${value}T00:00:00`);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Not recorded";
-  }
-
-  return new Intl.DateTimeFormat("en-GB", {
-    year: "numeric",
-  }).format(date);
 }
 
 export default BatchTranscript;
