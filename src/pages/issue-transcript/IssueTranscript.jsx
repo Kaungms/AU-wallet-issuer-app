@@ -6,6 +6,7 @@ import {
   getStudentAcademicPreview,
   getStudentAcademicReview,
 } from "../../api/issuerApi";
+import { useNotifications } from "../../context/NotificationContext";
 import BatchTranscript from "../batch-transcript/BatchTranscript";
 import "./issue-transcript.css";
 
@@ -251,6 +252,7 @@ async function fetchStudentReview(studentNumber, signal) {
 }
 
 function StudentAcademicReview({ student }) {
+  const { addNotification } = useNotifications();
   const walletVerified = student.walletEligibility === "verified";
   const [issuanceStatus, setIssuanceStatus] = useState("idle");
   const [issuanceError, setIssuanceError] = useState("");
@@ -266,6 +268,12 @@ function StudentAcademicReview({ student }) {
 
       setIssuanceResult(createdVc);
       setIssuanceStatus("success");
+      addNotification({
+        type: "vc-created",
+        title: "Transcript VC created",
+        message: `A transcript VC was created for ${student.fullName} (${student.studentNumber}).`,
+        actionPage: "issue-transcript",
+      });
     } catch (requestError) {
       if (requestError.name !== "AbortError") {
         setIssuanceStatus("error");

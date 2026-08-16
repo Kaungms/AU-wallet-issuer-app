@@ -14,9 +14,11 @@ import {
   getIssuerStudents,
   resolveWalletEligibility,
 } from "../../api/issuerApi";
+import { useNotifications } from "../../context/NotificationContext";
 import "./batch-transcript.css";
 
 function BatchTranscript() {
+  const { addNotification } = useNotifications();
   const [graduationYear, setGraduationYear] = useState("");
   const [facultyCode, setFacultyCode] = useState("");
   const [programCode, setProgramCode] = useState("");
@@ -299,6 +301,20 @@ function BatchTranscript() {
       failures,
     });
     setIssuanceStatus(failures.length > 0 ? "partial" : "success");
+
+    const createdCount = results.length - failures.length;
+
+    if (createdCount > 0) {
+      addNotification({
+        type: "batch-completed",
+        title: "Batch VC creation completed",
+        message:
+          failures.length > 0
+            ? `${createdCount} VCs were created and ${failures.length} could not be created.`
+            : `${createdCount} transcript VCs were created successfully.`,
+        actionPage: "issue-transcript",
+      });
+    }
   };
 
   return (

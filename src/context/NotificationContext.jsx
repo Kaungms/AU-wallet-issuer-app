@@ -180,6 +180,21 @@ export function NotificationProvider({ children }) {
     );
   };
 
+  const addNotification = ({ type, title, message, actionPage }) => {
+    setNotifications((current) => [
+      {
+        id: `notification:${Date.now()}:${Math.random().toString(36).slice(2)}`,
+        type,
+        title,
+        message,
+        createdAt: new Date().toISOString(),
+        read: false,
+        actionPage,
+      },
+      ...current,
+    ]);
+  };
+
   return (
     <NotificationContext.Provider
       value={{
@@ -190,6 +205,7 @@ export function NotificationProvider({ children }) {
         updatePreference,
         markAsRead,
         markAllAsRead,
+        addNotification,
       }}
     >
       {children}
