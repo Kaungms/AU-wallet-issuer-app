@@ -51,24 +51,6 @@ function Settings() {
 
   return (
     <div className="settings-page">
-      {/* =====================================
-          PAGE HEADING
-      ===================================== */}
-
-      <div className="settings-page-heading">
-        <p className="settings-eyebrow">
-          Issuer Configuration
-        </p>
-
-        <h1>Settings</h1>
-
-        <p>
-          Manage issuer preferences, system
-          information, notifications, and account
-          security.
-        </p>
-      </div>
-
       <div className="settings-content">
         {/* =====================================
             ISSUER INFORMATION
