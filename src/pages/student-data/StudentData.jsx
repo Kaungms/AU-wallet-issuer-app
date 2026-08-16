@@ -100,16 +100,7 @@ function StudentData({ onReviewStudent }) {
 
   return (
     <div className="student-data-page">
-      <div className="student-data-heading">
-        <div>
-          <p className="student-data-eyebrow">Pre-issuance review</p>
-          <h1>Student Data</h1>
-          <p>
-            Find an AU student and open the academic review flow before
-            transcript credential issuance.
-          </p>
-        </div>
-      </div>
+
 
       <section className="student-data-card">
         <div className="student-data-card-heading">
@@ -301,8 +292,6 @@ function formatDate(value) {
   }
 
   return new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "short",
     year: "numeric",
   }).format(date);
 }

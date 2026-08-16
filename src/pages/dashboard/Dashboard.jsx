@@ -54,25 +54,6 @@ function Dashboard({ onPageChange }) {
   return (
     <div className="dashboard-page">
       {/* ===============================
-          PAGE HEADING
-      =============================== */}
-
-      <div className="dashboard-page-heading">
-        <div>
-          <p className="dashboard-eyebrow">
-            Registrar Workspace
-          </p>
-
-          <h1>Dashboard</h1>
-
-          <p>
-            Monitor verified wallet connections and prepare academic records
-            for future credential issuance.
-          </p>
-        </div>
-      </div>
-
-      {/* ===============================
           MAIN STATS
       =============================== */}
 

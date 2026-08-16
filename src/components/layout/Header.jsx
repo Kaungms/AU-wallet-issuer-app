@@ -30,15 +30,6 @@ function Header({
       </div>
 
       <div className="main-header-actions">
-        <div className="header-search">
-          <Search size={17} />
-
-          <input
-            type="search"
-            placeholder="Search records..."
-            aria-label="Search records"
-          />
-        </div>
 
         <button
           type="button"
