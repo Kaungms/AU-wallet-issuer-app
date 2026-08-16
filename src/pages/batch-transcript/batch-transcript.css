@@ -1,0 +1,752 @@
+.batch-page {
+  width: 100%;
+  padding-bottom: 40px;
+}
+
+/* =====================================
+   PAGE HEADING
+===================================== */
+
+.batch-page-heading {
+  margin-bottom: 22px;
+}
+
+.batch-eyebrow {
+  margin: 0 0 5px;
+  color: #cc1919;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.batch-page-heading h1 {
+  margin: 0 0 7px;
+  color: #241d1b;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 27px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.batch-page-heading > div > p:last-child {
+  max-width: 760px;
+  margin: 0;
+  color: #776d69;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.batch-sample-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin-bottom: 20px;
+  padding: 12px 14px;
+
+  color: #795f20;
+  background: #fbf1de;
+
+  border: 1px solid #ead8aa;
+  border-radius: 9px;
+
+  font-size: 10px;
+}
+
+.batch-sample-notice strong {
+  flex-shrink: 0;
+}
+
+/* =====================================
+   GENERAL CARDS
+===================================== */
+
+.batch-card {
+  overflow: hidden;
+  margin-bottom: 20px;
+  background: #ffffff;
+  border: 1px solid #eae2de;
+  border-radius: 13px;
+}
+
+.batch-card-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px 22px;
+  border-bottom: 1px solid #eee7e3;
+}
+
+.batch-heading-icon {
+  width: 38px;
+  height: 38px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  color: #cc1919;
+  background: #f7e3e1;
+
+  border-radius: 9px;
+}
+
+.batch-card-heading h2,
+.batch-list-heading h2 {
+  margin: 0 0 5px;
+  color: #241d1b;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.batch-card-heading p,
+.batch-list-heading p {
+  margin: 0;
+  color: #817672;
+  font-size: 11px;
+}
+
+/* =====================================
+   FILTER FORM
+===================================== */
+
+.batch-filter-form {
+  display: grid;
+
+  grid-template-columns:
+    minmax(170px, 0.8fr)
+    minmax(260px, 1.4fr)
+    minmax(190px, 1fr)
+    auto;
+
+  align-items: end;
+  gap: 14px;
+
+  padding: 20px 22px;
+}
+
+.batch-form-field {
+  min-width: 0;
+  width: 100%;
+}
+
+.batch-form-field label {
+  display: block;
+  margin-bottom: 7px;
+  color: #6b615e;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.batch-form-field input,
+.batch-form-field select {
+  width: 100%;
+  height: 42px;
+
+  padding: 0 12px;
+
+  color: #312a28;
+  background: #ffffff;
+
+  border: 1px solid #ded5d1;
+  border-radius: 8px;
+
+  outline: none;
+
+  font-family: inherit;
+  font-size: 11px;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.batch-form-field input:focus,
+.batch-form-field select:focus {
+  border-color: #cc1919;
+  box-shadow: 0 0 0 3px rgba(204, 25, 25, 0.08);
+}
+
+.batch-form-field select:disabled {
+  color: #aaa09c;
+  background: #f7f4f2;
+  cursor: not-allowed;
+}
+
+.batch-primary-button,
+.batch-secondary-button,
+.batch-clear-button,
+.batch-issue-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.batch-primary-button {
+  min-height: 42px;
+  padding: 0 17px;
+
+  color: #ffffff;
+  background: #cc1919;
+
+  border: 1px solid #cc1919;
+  border-radius: 8px;
+}
+
+.batch-primary-button:hover {
+  background: #ad1515;
+  border-color: #ad1515;
+}
+
+.batch-error {
+  margin: -7px 22px 14px;
+  color: #b32626;
+  font-size: 10px;
+}
+
+.batch-demo-hint {
+  margin: -7px 22px 19px;
+  color: #938884;
+  font-size: 10px;
+}
+
+/* =====================================
+   EMPTY STATE
+===================================== */
+
+.batch-empty-state {
+  padding: 60px 30px;
+
+  color: #8d827e;
+  background: #ffffff;
+
+  border: 1px dashed #ddd3cf;
+  border-radius: 13px;
+
+  text-align: center;
+}
+
+.batch-empty-state svg {
+  margin-bottom: 12px;
+  color: #c4b6b1;
+}
+
+.batch-empty-state h2 {
+  margin: 0 0 7px;
+  color: #443936;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.batch-empty-state p {
+  margin: 0;
+  font-size: 11px;
+}
+
+.batch-state-error {
+  color: #a42d2d;
+  border-color: #efd3d3;
+}
+
+/* =====================================
+   SUMMARY CARDS
+===================================== */
+
+.batch-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.batch-summary-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 17px;
+
+  background: #ffffff;
+
+  border: 1px solid #eae2de;
+  border-radius: 11px;
+}
+
+.batch-summary-card strong {
+  display: block;
+  margin-bottom: 3px;
+
+  color: #251e1c;
+
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.batch-summary-card span {
+  color: #817672;
+  font-size: 10px;
+}
+
+.batch-summary-icon {
+  width: 38px;
+  height: 38px;
+
+  display: grid;
+  place-items: center;
+
+  color: #cc1919;
+  background: #f7e3e1;
+
+  border-radius: 9px;
+}
+
+/* =====================================
+   RESULT HEADING
+===================================== */
+
+.batch-list-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  padding: 20px 22px;
+
+  border-bottom: 1px solid #eee7e3;
+}
+
+.batch-selection-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+
+  margin-top: 8px;
+
+  color: #948985;
+  font-size: 9px;
+}
+
+/* =====================================
+   WALLET FILTER TOOLBAR
+===================================== */
+
+.batch-table-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+
+  padding: 16px 22px;
+
+  background: #fcfaf9;
+
+  border-bottom: 1px solid #eee5e1;
+}
+
+.wallet-filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wallet-filter-label {
+  color: #8b817d;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.wallet-filter-buttons {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.wallet-filter-button {
+  height: 34px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 0 12px;
+
+  color: #5f5652;
+  background: #ffffff;
+
+  border: 1px solid #ddd3cf;
+  border-radius: 8px;
+
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.wallet-filter-button:hover {
+  background: #f8f4f2;
+  border-color: #c9bbb6;
+}
+
+.wallet-filter-button > span {
+  min-width: 19px;
+  height: 19px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 5px;
+
+  color: #7f7470;
+  background: #f0ebe8;
+
+  border-radius: 999px;
+
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.wallet-filter-button-active {
+  color: #ffffff;
+  background: #cc1919;
+  border-color: #cc1919;
+}
+
+.wallet-filter-button-active:hover {
+  background: #ad1515;
+  border-color: #ad1515;
+}
+
+.wallet-filter-button-active > span {
+  color: #cc1919;
+  background: #ffffff;
+}
+
+/* =====================================
+   SELECTION CONTROLS
+===================================== */
+
+.batch-selection-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.batch-secondary-button,
+.batch-clear-button {
+  min-height: 36px;
+  padding: 0 13px;
+
+  border-radius: 8px;
+
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.batch-secondary-button {
+  color: #403735;
+  background: #ffffff;
+  border: 1px solid #ded5d1;
+}
+
+.batch-secondary-button:hover:not(:disabled) {
+  background: #f8f4f2;
+  border-color: #c9bbb6;
+}
+
+.batch-clear-button {
+  color: #a03c38;
+  background: #fffafa;
+  border: 1px solid #e3c9c6;
+}
+
+.batch-clear-button:hover:not(:disabled) {
+  color: #cc1919;
+  background: #fff4f3;
+  border-color: #dba9a4;
+}
+
+.batch-secondary-button:disabled,
+.batch-clear-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* =====================================
+   TABLE
+===================================== */
+
+.batch-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.batch-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+}
+
+.batch-table th,
+.batch-table td {
+  padding: 13px 14px;
+  border-bottom: 1px solid #eee7e3;
+  text-align: left;
+}
+
+.batch-table th {
+  color: #817672;
+  background: #faf7f5;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.batch-table td {
+  color: #413835;
+  font-size: 11px;
+}
+
+.batch-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.batch-checkbox-column {
+  width: 65px;
+  text-align: center !important;
+}
+
+.batch-checkbox-column input {
+  width: 15px;
+  height: 15px;
+  accent-color: #cc1919;
+}
+
+.batch-student-id {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px !important;
+}
+
+/* =====================================
+   WALLET STATUS
+===================================== */
+
+.wallet-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  padding: 5px 9px;
+
+  border-radius: 999px;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.wallet-status-connected {
+  color: #28744a;
+  background: #e7f4ec;
+}
+
+.wallet-status-not-connected {
+  color: #a06424;
+  background: #fbefdc;
+}
+
+.batch-row-not-connected {
+  background: #fcfaf8;
+}
+
+.batch-row-not-connected td {
+  color: #9a908c;
+}
+
+.batch-row-not-connected:hover {
+  background: #faf6f3;
+}
+
+/* =====================================
+   FILTER EMPTY
+===================================== */
+
+.batch-filter-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  padding: 36px 20px;
+
+  color: #968c88;
+
+  text-align: center;
+}
+
+.batch-filter-empty p {
+  margin: 0;
+  font-size: 10px;
+}
+
+/* =====================================
+   ACTION FOOTER
+===================================== */
+
+.batch-action-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  padding: 17px 22px;
+
+  color: #716763;
+  background: #fcfaf9;
+
+  border-top: 1px solid #eee7e3;
+
+  font-size: 11px;
+}
+
+.batch-action-footer strong {
+  color: #cc1919;
+}
+
+.batch-issue-button {
+  min-height: 40px;
+  padding: 0 16px;
+
+  color: #ffffff;
+  background: #cc1919;
+
+  border: none;
+  border-radius: 8px;
+}
+
+.batch-issue-button:hover:not(:disabled) {
+  background: #ad1515;
+}
+
+.batch-issue-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.batch-issuance-result {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+
+  margin: 0 22px 18px;
+  padding: 11px 13px;
+
+  color: #28744a;
+  background: #edf8f1;
+  border: 1px solid #c9e7d4;
+  border-radius: 8px;
+
+  font-size: 10px;
+}
+
+.batch-issuance-result-partial {
+  color: #96502b;
+  background: #fff5eb;
+  border-color: #f0d4b9;
+}
+
+/* =====================================
+   RESPONSIVE
+===================================== */
+
+@media (max-width: 1150px) {
+  .batch-filter-form {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .batch-filter-form .batch-primary-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 1000px) {
+  .batch-summary-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 850px) {
+  .batch-table-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .batch-selection-buttons {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 650px) {
+  .batch-sample-notice {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .batch-filter-form {
+    grid-template-columns: 1fr;
+  }
+
+  .batch-list-heading,
+  .batch-action-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .batch-form-field,
+  .batch-primary-button,
+  .batch-issue-button {
+    width: 100%;
+  }
+
+  .batch-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
