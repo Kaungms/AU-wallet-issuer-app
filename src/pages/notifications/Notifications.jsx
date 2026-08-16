@@ -51,20 +51,6 @@ function Notifications({ onPageChange }) {
 
   return (
     <div className="notifications-page">
-      <div className="notifications-page-heading">
-        <p className="notifications-eyebrow">
-          Registrar Workspace
-        </p>
-
-        <h1>Notifications</h1>
-
-        <p>
-          Review issuer activity, automatic
-          verification results, and system
-          notifications.
-        </p>
-      </div>
-
       <section className="notifications-card">
         <div className="notifications-toolbar">
           <div className="notifications-filter-tabs">
