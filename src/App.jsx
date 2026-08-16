@@ -5,6 +5,8 @@ import MainLayout from "./components/layout/MainLayout";
 import Dashboard from "./pages/dashboard/Dashboard";
 import IssueTranscript from "./pages/issue-transcript/IssueTranscript";
 import StudentData from "./pages/student-data/StudentData";
+import Settings from "./pages/settings/Settings";
+import Notifications from "./pages/notifications/Notifications";
 
 const pageInformation = {
   dashboard: {
@@ -22,6 +24,12 @@ const pageInformation = {
     title: "Issue Transcript",
     description:
       "Review academic records and prepare a pre-issuance selection.",
+  },
+
+    notifications: {
+    title: "Notifications",
+    description:
+      "Review issuer activity and system notifications.",
   },
 
   settings: {
@@ -109,9 +117,11 @@ function App() {
             }
           />
         );
+      case "notifications":
+        return <Notifications onPageChange={handlePageChange} />;
 
       case "settings":
-        return <p>Settings page will be added later.</p>;
+        return <Settings onPageChange={handlePageChange} />;
 
       default:
         return <Dashboard onPageChange={handlePageChange} />;

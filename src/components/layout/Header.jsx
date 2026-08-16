@@ -1,12 +1,28 @@
-import { Bell, ChevronDown, Search } from "lucide-react";
+import {
+  Bell,
+  ChevronDown,
+  Search,
+} from "lucide-react";
 
-function Header({ title, description }) {
+import { useNotifications } from "../../context/NotificationContext";
+
+function Header({
+  title,
+  description,
+  onPageChange,
+}) {
+  const { unreadCount } = useNotifications();
+
   return (
     <header className="main-header">
       <div>
-        <p className="main-header-label">Registrar Workspace</p>
+        <p className="main-header-label">
+          Registrar Workspace
+        </p>
 
-        <h2 className="main-header-title">{title}</h2>
+        <h2 className="main-header-title">
+          {title}
+        </h2>
 
         <p className="main-header-description">
           {description}
@@ -14,31 +30,42 @@ function Header({ title, description }) {
       </div>
 
       <div className="main-header-actions">
-        <div className="header-search">
-          <Search size={17} />
-
-          <input
-            type="search"
-            placeholder="Search records..."
-            aria-label="Search records"
-          />
-        </div>
 
         <button
           type="button"
           className="header-icon-button"
-          aria-label="Notifications"
+          aria-label="Open notifications"
+          onClick={() =>
+            onPageChange?.("notifications")
+          }
         >
           <Bell size={19} />
-          <span className="notification-dot" />
+
+          {unreadCount > 0 && (
+            <span className="notification-badge">
+              {unreadCount > 9
+                ? "9+"
+                : unreadCount}
+            </span>
+          )}
         </button>
 
-        <button type="button" className="header-profile-button">
-          <div className="header-profile-avatar">AR</div>
+        <button
+          type="button"
+          className="header-profile-button"
+        >
+          <div className="header-profile-avatar">
+            AR
+          </div>
 
           <div className="header-profile-details">
-            <span className="header-profile-name">AU Registrar</span>
-            <span className="header-profile-role">Issuer</span>
+            <span className="header-profile-name">
+              AU Registrar
+            </span>
+
+            <span className="header-profile-role">
+              Issuer
+            </span>
           </div>
 
           <ChevronDown size={16} />

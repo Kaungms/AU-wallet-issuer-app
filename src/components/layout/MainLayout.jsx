@@ -14,7 +14,7 @@ function MainLayout({
       <Sidebar activePage={activePage} onPageChange={onPageChange} />
 
       <main className="main-area">
-        <Header title={title} description={description} />
+        <Header title={title} description={description} onPageChange={onPageChange} />
 
         <div className="page-content">{children}</div>
       </main>
