@@ -12,12 +12,16 @@ Create an ignored `.env.local` with the NestJS server's base URL:
 VITE_API_BASE_URL=http://<backend-host>:3000
 ```
 
-Then run:
+Then run the frontend on the backend's allowlisted development origin:
 
 ```sh
 npm install
-npm run dev -- --port 5173 --strictPort
+npm run dev
 ```
+
+The dev script intentionally uses `http://localhost:5173` with `strictPort` so
+Vite fails clearly instead of silently switching to a port rejected by the
+backend's CORS policy.
 
 The NestJS server must listen on an address reachable by the browser and allow
 the frontend origin through CORS.
