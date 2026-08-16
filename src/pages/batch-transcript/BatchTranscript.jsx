@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  CalendarDays,
   CheckCircle2,
   Send,
   Users,
@@ -17,7 +16,7 @@ import {
 import "./batch-transcript.css";
 
 function BatchTranscript() {
-  const [graduationDate, setGraduationDate] = useState("");
+  const [graduationYear, setGraduationYear] = useState("");
   const [facultyCode, setFacultyCode] = useState("");
   const [programCode, setProgramCode] = useState("");
   const [facultyOptions, setFacultyOptions] = useState([]);
@@ -138,8 +137,8 @@ function BatchTranscript() {
     setError("");
   };
 
-  const handleGraduationDateChange = (event) => {
-    setGraduationDate(event.target.value);
+  const handleGraduationYearChange = (event) => {
+    setGraduationYear(event.target.value);
     clearResults();
   };
 
@@ -158,8 +157,8 @@ function BatchTranscript() {
   const handleFindStudents = async (event) => {
     event.preventDefault();
 
-    if (!graduationDate || !facultyCode || !programCode) {
-      setError("Select a graduation date, faculty, and program.");
+    if (!graduationYear || !facultyCode || !programCode) {
+      setError("Select a graduation year, faculty, and program.");
       setStatus("error");
       return;
     }
@@ -168,14 +167,46 @@ function BatchTranscript() {
     setError("");
 
     try {
-      const graduatingData = await getGraduatingStudents({
-        graduationDate,
-        facultyCode,
-        programCode,
-      });
-      const graduatingStudents = Array.isArray(graduatingData?.students)
-        ? graduatingData.students
-        : [];
+      const year = parseInt(graduationYear, 10);
+      const isLeap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+      const daysInYear = isLeap ? 366 : 365;
+      const searchDates = [];
+
+      for (let day = 1; day <= daysInYear; day++) {
+        const date = new Date(year, 0, day);
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, "0");
+        const dd = String(date.getDate()).padStart(2, "0");
+        searchDates.push(`${yyyy}-${mm}-${dd}`);
+      }
+
+      const allStudents = [];
+      const chunkSize = 30;
+
+      for (let i = 0; i < searchDates.length; i += chunkSize) {
+        const chunk = searchDates.slice(i, i + chunkSize);
+        const searchPromises = chunk.map((searchDate) =>
+          getGraduatingStudents({
+            graduationDate: searchDate,
+            facultyCode,
+            programCode,
+          }),
+        );
+
+        // eslint-disable-next-line no-await-in-loop
+        const dailyResults = await Promise.all(searchPromises);
+        const studentsInChunk = dailyResults.flatMap(
+          (result) => result?.students ?? [],
+        );
+        allStudents.push(...studentsInChunk);
+      }
+
+      // Remove duplicates in case a student appears in multiple queries
+      const studentMap = new Map();
+      allStudents.forEach((student) =>
+        studentMap.set(student.studentNumber, student),
+      );
+      const graduatingStudents = [...studentMap.values()];
 
       if (graduatingStudents.length === 0) {
         setStudents([]);
@@ -234,16 +265,6 @@ function BatchTranscript() {
 
   return (
     <div className="batch-page">
-      <div className="batch-page-heading">
-        <div>
-          <p className="batch-eyebrow">Pre-issuance preparation</p>
-          <h1>Batch Transcript Preparation</h1>
-          <p>
-            Filter graduating-student database records, review wallet
-            eligibility, and prepare a pre-issuance selection.
-          </p>
-        </div>
-      </div>
 
       <section className="batch-sample-notice" role="note">
         <strong>Issuer database connected</strong>
@@ -255,7 +276,7 @@ function BatchTranscript() {
       <section className="batch-card">
         <div className="batch-card-heading">
           <div className="batch-heading-icon">
-            <CalendarDays size={20} />
+            <Wallet size={20} />
           </div>
           <div>
             <h2>Find Graduating Students</h2>
@@ -265,13 +286,20 @@ function BatchTranscript() {
 
         <form className="batch-filter-form" onSubmit={handleFindStudents}>
           <div className="batch-form-field">
-            <label htmlFor="graduation-date">Graduation Date</label>
-            <input
-              id="graduation-date"
-              type="date"
-              value={graduationDate}
-              onChange={handleGraduationDateChange}
-            />
+            <label htmlFor="graduation-year">Graduation Year</label>
+            <select
+              id="graduation-year"
+              value={graduationYear}
+              onChange={handleGraduationYearChange}
+            >
+              <option value="">Select Year</option>
+              {Array.from({ length: 10 }, (_, i) => {
+                const year = new Date().getFullYear() + 2 - i;
+                return (
+                  <option key={year} value={year}>{year}</option>
+                );
+              })}
+            </select>
           </div>
 
           <div className="batch-form-field">
@@ -353,36 +381,16 @@ function BatchTranscript() {
       {status === "idle" && (
         <BatchState
           title="No batch loaded"
-          message="Choose all three filters to load graduating students."
+          message="Choose a graduation year, faculty, and program to load students."
         />
       )}
 
       {status === "ready" && (
         <>
-          <section className="batch-summary-grid">
-            <SummaryCard icon={Users} value={students.length} label="Students Found" />
-            <SummaryCard icon={Wallet} value={connectedStudents.length} label="Wallet Verified" />
-            <SummaryCard icon={CheckCircle2} value={selectedStudents.length} label="Selected" />
-          </section>
+
 
           <section className="batch-card batch-students-card">
-            <div className="batch-list-heading">
-              <div>
-                <h2>Graduating Students</h2>
-                <p>{students.length} database records found.</p>
-                <div className="batch-selection-summary">
-                  <span>{formatDate(graduationDate)}</span>
-                  <span>•</span>
-                  <span>{selectedFaculty?.name ?? facultyCode}</span>
-                  <span>•</span>
-                  <span>
-                    {selectedProgram
-                      ? formatProgram(selectedProgram)
-                      : "Selected program"}
-                  </span>
-                </div>
-              </div>
-            </div>
+
 
             <div className="batch-table-toolbar">
               <div className="wallet-filter-section">
@@ -627,11 +635,19 @@ function WalletStatus({ status }) {
 }
 
 function formatDate(value) {
+  if (!value) {
+    return "Not recorded";
+  }
+
+  const date = new Date(`${value}T00:00:00`);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Not recorded";
+  }
+
   return new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "long",
     year: "numeric",
-  }).format(new Date(`${value}T00:00:00`));
+  }).format(date);
 }
 
 export default BatchTranscript;

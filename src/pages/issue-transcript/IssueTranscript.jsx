@@ -145,16 +145,7 @@ function SingleTranscript({ initialStudentId, onStudentChange }) {
 
   return (
     <div className="issue-transcript-page">
-      <div className="issue-page-heading">
-        <div>
-          <p className="issue-eyebrow">Pre-issuance review</p>
-          <h1>Single Transcript Preparation</h1>
-          <p>
-            Find a student, review the academic record, confirm wallet
-            eligibility, and prepare a pre-issuance selection.
-          </p>
-        </div>
-      </div>
+
 
       <section className="issue-card student-search-card">
         <div className="issue-search-heading">
@@ -616,8 +607,6 @@ function formatDate(value) {
   }
 
   return new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "long",
     year: "numeric",
   }).format(date);
 }
