@@ -334,29 +334,28 @@ function StudentAcademicReview({ student }) {
               value={formatDate(student.graduationDate)}
             />
             <InfoRow
-              label="Academic status"
-              value={formatStatus(student.academicStatus)}
+              label="Graduation class"
+              value={student.graduationClass || "Not recorded"}
             />
             <InfoRow
-              label="Graduation status"
-              value={formatStatus(student.graduationStatus)}
+              label="Academic status"
+              value={formatStatus(student.academicStatus)}
             />
             <InfoRow
               label="Requirements fulfilled"
               value={formatBoolean(student.requirementsFulfilled)}
             />
-            <InfoRow label="Required credits" value={student.requiredCredits} />
             <InfoRow
-              label="AU-completed credits"
-              value={student.creditSummary?.completed}
+              label="Credits"
+              value={formatCredits(
+                student.creditSummary?.completed,
+                student.creditSummary?.transferred,
+                student.requiredCredits,
+              )}
             />
             <InfoRow
               label="Transferred credits"
               value={student.creditSummary?.transferred}
-            />
-            <InfoRow
-              label="Credits toward degree"
-              value={student.creditSummary?.earned}
             />
             <InfoRow label="Award" value={student.award} />
           </div>
@@ -656,6 +655,24 @@ function formatBoolean(value) {
   return "Not recorded";
 }
 
+function formatCredits(completed, transferred, required) {
+  const completedValue = Number(completed) || 0;
+  const transferredValue = Number(transferred) || 0;
+  const requiredValue = Number(required) || 0;
+
+  if (Number.isNaN(completedValue) && Number.isNaN(transferredValue) && Number.isNaN(requiredValue)) {
+    return "Not recorded";
+  }
+
+  const totalCompleted = completedValue + transferredValue;
+
+  if (requiredValue === 0) {
+    return `${totalCompleted} / ${requiredValue}`;
+  }
+
+  return `${totalCompleted} / ${requiredValue}`;
+}
+
 function formatStatus(value) {
   if (!value) {
     return "Not recorded";
@@ -679,6 +696,7 @@ function formatDate(value) {
   }
 
   return new Intl.DateTimeFormat("en-GB", {
+    month: "short",
     year: "numeric",
   }).format(date);
 }

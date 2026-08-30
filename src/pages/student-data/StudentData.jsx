@@ -159,7 +159,7 @@ function StudentData({ onReviewStudent }) {
                     <th>Student number</th>
                     <th>Student</th>
                     <th>Degree and major</th>
-                    <th>Academic status</th>
+                    <th>Class</th>
                     <th>Graduation</th>
                     <th>Wallet eligibility</th>
                     <th>Review</th>
@@ -178,7 +178,7 @@ function StudentData({ onReviewStudent }) {
                           </span>
                         )}
                       </td>
-                      <td>{formatStatus(student.academicStatus)}</td>
+                      <td>{student.graduationClass || "Not recorded"}</td>
                       <td>{formatDate(student.graduationDate)}</td>
                       <td>
                         <WalletEligibility status={student.walletEligibility} />
@@ -292,6 +292,7 @@ function formatDate(value) {
   }
 
   return new Intl.DateTimeFormat("en-GB", {
+    month: "short",
     year: "numeric",
   }).format(date);
 }
