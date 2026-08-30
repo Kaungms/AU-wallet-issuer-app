@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 
+import Login from "./pages/login/Login";
+import { useAuth } from "./context/AuthContext";
+
 import MainLayout from "./components/layout/MainLayout";
 
 import Dashboard from "./pages/dashboard/Dashboard";
@@ -48,7 +51,11 @@ const pageInformation = {
 };
 
 function App() {
-  const [initialNavigation] = useState(readNavigationFromUrl);
+  const { isAuthenticated } = useAuth();
+
+  const [initialNavigation] = useState(
+    readNavigationFromUrl,
+  );
 
   const [activePage, setActivePage] = useState(
     initialNavigation.page,
@@ -202,6 +209,14 @@ function App() {
         );
     }
   };
+
+  /*
+    If the administrator is not logged in,
+    show only the login page.
+  */
+  if (!isAuthenticated) {
+    return <Login />;
+  }
 
   return (
     <MainLayout
