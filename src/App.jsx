@@ -7,6 +7,7 @@ import IssueTranscript from "./pages/issue-transcript/IssueTranscript";
 import StudentData from "./pages/student-data/StudentData";
 import Settings from "./pages/settings/Settings";
 import Notifications from "./pages/notifications/Notifications";
+import IssuedCredentials from "./pages/issued-credentials/IssuedCredentials";
 
 const pageInformation = {
   dashboard: {
@@ -17,7 +18,8 @@ const pageInformation = {
 
   students: {
     title: "Student Data",
-    description: "Find students and prepare academic records for review.",
+    description:
+      "Find students and prepare academic records for review.",
   },
 
   "issue-transcript": {
@@ -26,7 +28,13 @@ const pageInformation = {
       "Review academic records and prepare a pre-issuance selection.",
   },
 
-    notifications: {
+  "issued-credentials": {
+    title: "Issued Credentials",
+    description:
+      "Review digital transcript credentials issued by the AU Registrar.",
+  },
+
+  notifications: {
     title: "Notifications",
     description:
       "Review issuer activity and system notifications.",
@@ -34,14 +42,22 @@ const pageInformation = {
 
   settings: {
     title: "Settings",
-    description: "Manage issuer portal configuration.",
+    description:
+      "Manage issuer portal configuration.",
   },
 };
 
 function App() {
   const [initialNavigation] = useState(readNavigationFromUrl);
-  const [activePage, setActivePage] = useState(initialNavigation.page);
-  const [issueMode, setIssueMode] = useState(initialNavigation.mode);
+
+  const [activePage, setActivePage] = useState(
+    initialNavigation.page,
+  );
+
+  const [issueMode, setIssueMode] = useState(
+    initialNavigation.mode,
+  );
+
   const [reviewStudentId, setReviewStudentId] = useState(
     initialNavigation.studentId,
   );
@@ -56,21 +72,43 @@ function App() {
     };
 
     if (!window.location.hash) {
-      window.history.replaceState(null, "", buildNavigationHash({
-        page: initialNavigation.page,
-        mode: initialNavigation.mode,
-        studentId: initialNavigation.studentId,
-      }));
+      window.history.replaceState(
+        null,
+        "",
+        buildNavigationHash({
+          page: initialNavigation.page,
+          mode: initialNavigation.mode,
+          studentId: initialNavigation.studentId,
+        }),
+      );
     }
 
-    window.addEventListener("popstate", syncNavigationFromUrl);
+    window.addEventListener(
+      "popstate",
+      syncNavigationFromUrl,
+    );
 
-    return () => window.removeEventListener("popstate", syncNavigationFromUrl);
+    return () =>
+      window.removeEventListener(
+        "popstate",
+        syncNavigationFromUrl,
+      );
   }, [initialNavigation]);
 
-  const handlePageChange = (page, mode = null, studentId = "") => {
-    const nextMode = page === "issue-transcript" ? mode ?? issueMode : issueMode;
-    const nextStudentId = page === "issue-transcript" ? studentId : "";
+  const handlePageChange = (
+    page,
+    mode = null,
+    studentId = "",
+  ) => {
+    const nextMode =
+      page === "issue-transcript"
+        ? mode ?? issueMode
+        : issueMode;
+
+    const nextStudentId =
+      page === "issue-transcript"
+        ? studentId
+        : "";
 
     setIssueMode(nextMode);
     setReviewStudentId(nextStudentId);
@@ -83,22 +121,36 @@ function App() {
     });
 
     if (window.location.hash !== nextHash) {
-      window.history.pushState(null, "", nextHash);
+      window.history.pushState(
+        null,
+        "",
+        nextHash,
+      );
     }
   };
 
-  const currentPage = pageInformation[activePage] || pageInformation.dashboard;
+  const currentPage =
+    pageInformation[activePage] ||
+    pageInformation.dashboard;
 
   const renderPage = () => {
     switch (activePage) {
       case "dashboard":
-        return <Dashboard onPageChange={handlePageChange} />;
+        return (
+          <Dashboard
+            onPageChange={handlePageChange}
+          />
+        );
 
       case "students":
         return (
           <StudentData
             onReviewStudent={(studentId) =>
-              handlePageChange("issue-transcript", "single", studentId)
+              handlePageChange(
+                "issue-transcript",
+                "single",
+                studentId,
+              )
             }
           />
         );
@@ -110,21 +162,44 @@ function App() {
             initialMode={issueMode}
             initialStudentId={reviewStudentId}
             onModeChange={(mode) =>
-              handlePageChange("issue-transcript", mode)
+              handlePageChange(
+                "issue-transcript",
+                mode,
+              )
             }
             onStudentChange={(studentId) =>
-              handlePageChange("issue-transcript", "single", studentId)
+              handlePageChange(
+                "issue-transcript",
+                "single",
+                studentId,
+              )
             }
           />
         );
+
+      case "issued-credentials":
+        return <IssuedCredentials />;
+
       case "notifications":
-        return <Notifications onPageChange={handlePageChange} />;
+        return (
+          <Notifications
+            onPageChange={handlePageChange}
+          />
+        );
 
       case "settings":
-        return <Settings onPageChange={handlePageChange} />;
+        return (
+          <Settings
+            onPageChange={handlePageChange}
+          />
+        );
 
       default:
-        return <Dashboard onPageChange={handlePageChange} />;
+        return (
+          <Dashboard
+            onPageChange={handlePageChange}
+          />
+        );
     }
   };
 
@@ -141,26 +216,50 @@ function App() {
 }
 
 function readNavigationFromUrl() {
-  const hashValue = window.location.hash.replace(/^#\/?/, "");
-  const [routeValue = "", queryValue = ""] = hashValue.split("?");
-  const page = Object.hasOwn(pageInformation, routeValue)
+  const hashValue =
+    window.location.hash.replace(/^#\/?/, "");
+
+  const [routeValue = "", queryValue = ""] =
+    hashValue.split("?");
+
+  const page = Object.hasOwn(
+    pageInformation,
+    routeValue,
+  )
     ? routeValue
     : "dashboard";
-  const query = new URLSearchParams(queryValue);
-  const mode = query.get("mode") === "batch" ? "batch" : "single";
-  const studentId = page === "issue-transcript"
-    ? query.get("student")?.trim() ?? ""
-    : "";
 
-  return { page, mode, studentId };
+  const query =
+    new URLSearchParams(queryValue);
+
+  const mode =
+    query.get("mode") === "batch"
+      ? "batch"
+      : "single";
+
+  const studentId =
+    page === "issue-transcript"
+      ? query.get("student")?.trim() ?? ""
+      : "";
+
+  return {
+    page,
+    mode,
+    studentId,
+  };
 }
 
-function buildNavigationHash({ page, mode, studentId }) {
+function buildNavigationHash({
+  page,
+  mode,
+  studentId,
+}) {
   if (page !== "issue-transcript") {
     return `#/${page}`;
   }
 
-  const query = new URLSearchParams({ mode });
+  const query =
+    new URLSearchParams({ mode });
 
   if (studentId) {
     query.set("student", studentId);

@@ -12,8 +12,12 @@ import { getIssuerConnectionSummary } from "../../api/issuerApi";
 import "./dashboard.css";
 
 function Dashboard({ onPageChange }) {
-  const [verifiedConnectionCount, setVerifiedConnectionCount] = useState(null);
-  const [recentVerifications, setRecentVerifications] = useState([]);
+  const [verifiedConnectionCount, setVerifiedConnectionCount] =
+    useState(null);
+
+  const [recentVerifications, setRecentVerifications] =
+    useState([]);
+
   const [connectionSummaryStatus, setConnectionSummaryStatus] =
     useState("loading");
 
@@ -22,18 +26,27 @@ function Dashboard({ onPageChange }) {
 
     async function loadConnectionSummary() {
       try {
-        const connectionSummary = await getIssuerConnectionSummary({
-          signal: abortController.signal,
-        });
+        const connectionSummary =
+          await getIssuerConnectionSummary({
+            signal: abortController.signal,
+          });
 
         setVerifiedConnectionCount(
           connectionSummary.verifiedConnectionCount,
         );
-        setRecentVerifications(connectionSummary.recentVerifications);
+
+        setRecentVerifications(
+          connectionSummary.recentVerifications,
+        );
+
         setConnectionSummaryStatus("success");
       } catch (error) {
         if (error.name !== "AbortError") {
-          console.error("Unable to load issuer connection summary.", error);
+          console.error(
+            "Unable to load issuer connection summary.",
+            error,
+          );
+
           setConnectionSummaryStatus("error");
         }
       }
@@ -53,6 +66,7 @@ function Dashboard({ onPageChange }) {
 
   return (
     <div className="dashboard-page">
+
       {/* ===============================
           MAIN STATS
       =============================== */}
@@ -69,7 +83,10 @@ function Dashboard({ onPageChange }) {
           icon={FileCheck2}
           label="Transcripts Issued"
           value="Not available"
-          description="Credential issuance service is not connected"
+          description="View all issued transcript credentials"
+          onClick={() =>
+            onPageChange?.("issued-credentials")
+          }
         />
       </section>
 
@@ -78,6 +95,7 @@ function Dashboard({ onPageChange }) {
       =============================== */}
 
       <div className="dashboard-content-grid">
+
         {/* Recent wallet activity */}
 
         <section className="dashboard-card">
@@ -96,7 +114,9 @@ function Dashboard({ onPageChange }) {
 
           <div className="wallet-activity-list">
             {connectionSummaryStatus === "loading" && (
-              <WalletActivityState message="Loading recent verifications…" />
+              <WalletActivityState
+                message="Loading recent verifications…"
+              />
             )}
 
             {connectionSummaryStatus === "error" && (
@@ -108,16 +128,20 @@ function Dashboard({ onPageChange }) {
 
             {connectionSummaryStatus === "success" &&
               recentVerifications.length === 0 && (
-                <WalletActivityState message="No recent verifications." />
+                <WalletActivityState
+                  message="No recent verifications."
+                />
               )}
 
             {connectionSummaryStatus === "success" &&
-              recentVerifications.map((verification) => (
-                <WalletActivityItem
-                  key={`${verification.programCode}-${verification.verifiedAt}`}
-                  verification={verification}
-                />
-              ))}
+              recentVerifications.map(
+                (verification) => (
+                  <WalletActivityItem
+                    key={`${verification.programCode}-${verification.verifiedAt}`}
+                    verification={verification}
+                  />
+                ),
+              )}
           </div>
         </section>
 
@@ -141,11 +165,16 @@ function Dashboard({ onPageChange }) {
 
           <div className="dashboard-issuance-unavailable">
             <FileCheck2 size={22} />
+
             <div>
-              <strong>Credential issuance analytics unavailable</strong>
+              <strong>
+                Credential issuance analytics unavailable
+              </strong>
+
               <p>
-                Transcript totals and analytics will appear when supported
-                issuer backend endpoints are available.
+                Transcript totals and analytics will appear
+                when supported issuer backend endpoints are
+                available.
               </p>
             </div>
           </div>
@@ -165,7 +194,8 @@ function Dashboard({ onPageChange }) {
           <h2>Transcript Issuance</h2>
 
           <p id="transcript-actions-unavailable">
-            Prepare a single or batch selection for a future issuance service.
+            Prepare a single or batch selection for a future
+            issuance service.
           </p>
         </div>
 
@@ -173,7 +203,12 @@ function Dashboard({ onPageChange }) {
           <button
             type="button"
             className="dashboard-secondary-action"
-            onClick={() => onPageChange?.("issue-transcript", "single")}
+            onClick={() =>
+              onPageChange?.(
+                "issue-transcript",
+                "single",
+              )
+            }
           >
             <FilePlus2 size={17} />
             Single Preparation
@@ -182,7 +217,12 @@ function Dashboard({ onPageChange }) {
           <button
             type="button"
             className="dashboard-primary-action"
-            onClick={() => onPageChange?.("issue-transcript", "batch")}
+            onClick={() =>
+              onPageChange?.(
+                "issue-transcript",
+                "batch",
+              )
+            }
           >
             <Users size={17} />
             Batch Preparation
@@ -198,16 +238,40 @@ function DashboardStatCard({
   label,
   value,
   description,
+  onClick,
 }) {
+  const isClickable = Boolean(onClick);
+
   return (
-    <div className="dashboard-stat-card">
+    <div
+      className={`dashboard-stat-card ${
+        isClickable
+          ? "dashboard-stat-card-clickable"
+          : ""
+      }`}
+      onClick={onClick}
+      role={isClickable ? "button" : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      onKeyDown={(event) => {
+        if (
+          isClickable &&
+          (event.key === "Enter" ||
+            event.key === " ")
+        ) {
+          event.preventDefault();
+          onClick();
+        }
+      }}
+    >
       <div>
         <span className="dashboard-stat-label">
           {label}
         </span>
 
         <strong>
-          {value.toLocaleString()}
+          {typeof value === "number"
+            ? value.toLocaleString()
+            : value}
         </strong>
 
         <p>{description}</p>
@@ -231,7 +295,9 @@ function WalletActivityItem({ verification }) {
         <div>
           <strong>{verification.major}</strong>
 
-          <span>Verified wallet connection</span>
+          <span>
+            Verified wallet connection
+          </span>
         </div>
       </div>
 
@@ -239,13 +305,18 @@ function WalletActivityItem({ verification }) {
         className="wallet-activity-time"
         dateTime={verification.verifiedAt}
       >
-        {formatVerifiedAt(verification.verifiedAt)}
+        {formatVerifiedAt(
+          verification.verifiedAt,
+        )}
       </time>
     </div>
   );
 }
 
-function WalletActivityState({ message, isError = false }) {
+function WalletActivityState({
+  message,
+  isError = false,
+}) {
   return (
     <div
       className="wallet-activity-item"
@@ -269,10 +340,13 @@ function formatVerifiedAt(value) {
     return "Date unavailable";
   }
 
-  return new Intl.DateTimeFormat(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(date);
+  return new Intl.DateTimeFormat(
+    undefined,
+    {
+      dateStyle: "medium",
+      timeStyle: "short",
+    },
+  ).format(date);
 }
 
 export default Dashboard;

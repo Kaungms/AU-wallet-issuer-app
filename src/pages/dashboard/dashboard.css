@@ -514,3 +514,49 @@
     grid-column: 2;
   }
 }
+
+.issued-count-card {
+  min-width: 180px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+
+  background: #ffffff;
+  border: 1px solid #e5dcd8;
+  border-radius: 10px;
+}
+
+.issued-count-card > svg {
+  flex-shrink: 0;
+  color: #cc1919;
+}
+
+.issued-count-card > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.issued-count-card span {
+  display: block;
+  margin: 0;
+
+  color: #897d78;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.issued-count-card strong {
+  display: block;
+  margin: 0;
+
+  color: #342d2a;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+}
