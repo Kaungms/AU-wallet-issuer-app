@@ -162,18 +162,35 @@ export async function createAcademicTranscriptVc(
 }
 
 export async function getGraduatingStudents({
+  graduationYear,
   graduationDate,
   facultyCode,
   programCode,
   signal,
   apiBaseUrl,
 } = {}) {
-  validateDate(graduationDate, "graduationDate");
+  let finalYear = graduationYear;
+
+  if (typeof finalYear === "string" && finalYear.trim() !== "") {
+    finalYear = parseInt(finalYear, 10);
+  }
+
+  if (finalYear !== undefined && !Number.isNaN(finalYear)) {
+    if (!Number.isInteger(finalYear)) {
+      throw invalidRequest(
+        "graduationYear must be an integer.",
+        "graduationYear",
+      );
+    }
+  } else if (graduationDate !== undefined) {
+    validateDate(graduationDate, "graduationDate");
+  }
 
   const envelope = await issuerRequest("/issuer/graduating-students", {
     signal,
     apiBaseUrl,
     query: {
+      graduationYear: finalYear,
       graduationDate,
       facultyCode: requireNonEmptyString(facultyCode, "facultyCode"),
       programCode: requireNonEmptyString(programCode, "programCode"),

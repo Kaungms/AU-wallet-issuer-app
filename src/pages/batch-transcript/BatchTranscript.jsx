@@ -170,45 +170,13 @@ function BatchTranscript() {
     setError("");
 
     try {
-      const year = parseInt(graduationYear, 10);
-      const isLeap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
-      const daysInYear = isLeap ? 366 : 365;
-      const searchDates = [];
+      const studentData = await getGraduatingStudents({
+        graduationYear: parseInt(graduationYear, 10),
+        facultyCode,
+        programCode,
+      });
 
-      for (let day = 1; day <= daysInYear; day++) {
-        const date = new Date(year, 0, day);
-        const yyyy = date.getFullYear();
-        const mm = String(date.getMonth() + 1).padStart(2, "0");
-        const dd = String(date.getDate()).padStart(2, "0");
-        searchDates.push(`${yyyy}-${mm}-${dd}`);
-      }
-
-      const allStudents = [];
-      const chunkSize = 30;
-
-      for (let i = 0; i < searchDates.length; i += chunkSize) {
-        const chunk = searchDates.slice(i, i + chunkSize);
-        const searchPromises = chunk.map((searchDate) =>
-          getGraduatingStudents({
-            graduationDate: searchDate,
-            facultyCode,
-            programCode,
-          }),
-        );
-
-        const dailyResults = await Promise.all(searchPromises);
-        const studentsInChunk = dailyResults.flatMap(
-          (result) => result?.students ?? [],
-        );
-        allStudents.push(...studentsInChunk);
-      }
-
-      // Remove duplicates in case a student appears in multiple queries
-      const studentMap = new Map();
-      allStudents.forEach((student) =>
-        studentMap.set(student.studentNumber, student),
-      );
-      const graduatingStudents = [...studentMap.values()];
+      const graduatingStudents = studentData?.students || [];
 
       if (graduatingStudents.length === 0) {
         setStudents([]);
@@ -506,7 +474,7 @@ function BatchTranscript() {
                     <th>Student number</th>
                     <th>Student</th>
                     <th>Major</th>
-                    <th>Academic status</th>
+                    <th>Class</th>
                     <th>Wallet Eligibility</th>
                     <th>Preparation</th>
                   </tr>
@@ -533,7 +501,7 @@ function BatchTranscript() {
                         <td className="batch-student-id">{student.studentNumber}</td>
                         <td><strong>{student.fullName}</strong></td>
                         <td>{student.major}</td>
-                        <td>{formatStatus(student.academicStatus)}</td>
+                        <td>{student.graduationClass || "Not recorded"}</td>
                         <td><WalletStatus status={student.walletEligibility} /></td>
                         <td>
                           <span
