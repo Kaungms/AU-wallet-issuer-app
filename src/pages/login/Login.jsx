@@ -10,6 +10,8 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import "./login.css";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+
 function Login() {
   const { completeLogin } = useAuth();
 
@@ -37,47 +39,49 @@ function Login() {
     setStatus("loading");
     setErrorMessage("");
 
-     try {
-
-    // Temporary frontend login for development only
-
-    const isValidAdmin =
-
-      normalizedEmail === "admin@au.edu" &&
-
-      password === "admin123";
-
-    if (!isValidAdmin) {
-
-      throw new Error(
-
-        "Incorrect email or password.",
-
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/auth/issuer/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: normalizedEmail,
+            password,
+          }),
+        },
       );
 
-    }
+      const data = await response.json().catch(() => ({}));
 
-    completeLogin({
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            data.error?.message ||
+            "Incorrect email or password.",
+        );
+      }
 
-      name: "AU Registrar",
+      const loginData = data.data ?? data;
+      const accessToken = loginData.accessToken;
+      const user = loginData.user ?? {
+        email: normalizedEmail,
+      };
 
-      email: normalizedEmail,
+      localStorage.setItem("accessToken", accessToken);
 
-      role: "Issuer Administrator",
+      completeLogin(user);
+      window.history.replaceState(null, "", "#/dashboard");
+      window.dispatchEvent(new PopStateEvent("popstate"));
 
-    });
-
-    setStatus("success");
-
-  } catch (error) {
-
-    setStatus("error");
-
-    setErrorMessage(
-
-      error.message ||
-
-        "Unable to sign in. Please try again.",
+      setStatus("success");
+    } catch (error) {
+      setStatus("error");
+      setErrorMessage(
+        error.message ||
+          "Unable to sign in. Please try again.",
       );
     }
   };
