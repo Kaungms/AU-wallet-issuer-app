@@ -251,6 +251,10 @@
    CONTENT
 ===================================== */
 
+.notification-item-content {
+  min-width: 0;
+}
+
 .notification-title-row {
   display: flex;
   align-items: center;
@@ -307,18 +311,103 @@
 }
 
 .notification-time {
+  display: block;
+
   color: #9b918d;
 
   font-size: 8px;
 }
 
+/* =====================================
+   VIEW
+===================================== */
+
 .notification-view-label {
   align-self: center;
 
-  color: #cc1919;
+  padding: 6px 8px;
 
+  color: #cc1919;
+  background: transparent;
+
+  border: none;
+  border-radius: 6px;
+
+  font: inherit;
   font-size: 9px;
   font-weight: 700;
+
+  cursor: pointer;
+
+  transition: background 0.15s ease;
+}
+
+.notification-view-label:hover {
+  background: #fff1f1;
+}
+
+.notification-view-label:focus-visible {
+  outline: 2px solid #cc1919;
+  outline-offset: 2px;
+}
+
+/* =====================================
+   ERROR DETAILS
+===================================== */
+
+.notification-error-details {
+  max-width: 620px;
+
+  margin-top: 12px;
+  padding: 11px 13px;
+
+  color: #633936;
+  background: #fff7f6;
+
+  border: 1px solid #efd9d6;
+  border-radius: 8px;
+
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+.notification-error-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  margin-bottom: 7px;
+
+  color: #b92828;
+}
+
+.notification-error-heading strong {
+  font-size: 9px;
+}
+
+.notification-error-code {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  margin-bottom: 5px;
+}
+
+.notification-error-code span {
+  color: #8b7470;
+}
+
+.notification-error-code strong {
+  color: #5e3531;
+}
+
+.notification-error-details p {
+  margin: 0;
+
+  color: #78534f;
+
+  font-size: 9px;
+  line-height: 1.55;
 }
 
 /* =====================================
@@ -396,5 +485,10 @@
 
   .notification-view-label {
     grid-column: 2;
+    justify-self: start;
+  }
+
+  .notification-error-details {
+    max-width: 100%;
   }
 }

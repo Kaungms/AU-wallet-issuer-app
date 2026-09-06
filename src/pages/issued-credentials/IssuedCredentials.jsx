@@ -32,14 +32,6 @@ function IssuedCredentials() {
   return (
     <div className="issued-credentials-page">
       <div className="issued-credentials-heading">
-        <div>
-          <p className="issued-label">Credential Records</p>
-          <h1>Issued Credentials</h1>
-          <p>
-            Review all digital transcripts issued by the AU Registrar.
-          </p>
-        </div>
-
         <div className="issued-count-card">
           <FileText size={20} />
           <div>

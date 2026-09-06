@@ -8,7 +8,7 @@ are intentionally outside this repository's current integration.
 
 Create an ignored `.env.local` with the NestJS server's base URL:
 
-```dotenv
+```dotenv   
 VITE_API_BASE_URL=http://<backend-host>:3000
 ```
 

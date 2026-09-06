@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 import { getIssuerConnectionSummary } from "../api/issuerApi";
 
@@ -14,18 +8,13 @@ const VERIFICATION_REFRESH_INTERVAL = 30_000;
 
 function getStoredPreferences() {
   try {
-    const stored = localStorage.getItem(
-      "issuer-notification-preferences"
-    );
+    const stored = localStorage.getItem("issuer-notification-preferences");
 
     if (stored) {
       return JSON.parse(stored);
     }
   } catch (error) {
-    console.error(
-      "Unable to load notification preferences:",
-      error
-    );
+    console.error("Unable to load notification preferences:", error);
   }
 
   return {
@@ -37,11 +26,9 @@ function getStoredPreferences() {
 }
 
 export function NotificationProvider({ children }) {
-  const [notifications, setNotifications] =
-    useState([]);
+  const [notifications, setNotifications] = useState([]);
 
-  const [preferences, setPreferences] =
-    useState(getStoredPreferences);
+  const [preferences, setPreferences] = useState(getStoredPreferences);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -53,35 +40,62 @@ export function NotificationProvider({ children }) {
         });
 
         setNotifications((current) => {
-          const existingNotifications = new Map(
-            current.map((notification) => [notification.id, notification]),
+          const notificationMap = new Map();
+
+          /*
+              Keep everything already
+              in notification history.
+            */
+          current.forEach((notification) => {
+            notificationMap.set(notification.id, notification);
+          });
+
+          /*
+              Add or update verification
+              notifications returned by backend.
+            */
+          recentVerifications.forEach((verification) => {
+            const id = getVerificationNotificationId(verification);
+
+            const existing = notificationMap.get(id);
+
+            notificationMap.set(id, {
+              id,
+
+              type: "verification",
+
+              title: "Automatic verification completed",
+
+              message: "Automatic student verification completed successfully.",
+
+              programCode: verification.programCode,
+
+              major: verification.major,
+
+              verifiedAt: verification.verifiedAt,
+
+              /*
+                      Keep previous read state
+                      if this notification
+                      already existed.
+                    */
+              read: existing?.read ?? false,
+
+              /*
+                      Verification was successful,
+                      so there is nothing to inspect.
+                    */
+              canView: false,
+            });
+          });
+
+          /*
+              Convert back to array and
+              sort newest → oldest.
+            */
+          return Array.from(notificationMap.values()).sort(
+            (a, b) => getNotificationTime(b) - getNotificationTime(a),
           );
-
-          const verificationNotifications = recentVerifications.map(
-            (verification) => {
-              const id = getVerificationNotificationId(verification);
-              const existing = existingNotifications.get(id);
-
-              return {
-                id,
-                type: "verification",
-                title: "Automatic verification completed",
-                programCode: verification.programCode,
-                major: verification.major,
-                verifiedAt: verification.verifiedAt,
-                read: existing?.read ?? false,
-              };
-            },
-          );
-
-          const fetchedIds = new Set(
-            verificationNotifications.map((notification) => notification.id),
-          );
-
-          return [
-            ...verificationNotifications,
-            ...current.filter((notification) => !fetchedIds.has(notification.id)),
-          ];
         });
       } catch (error) {
         if (error.name !== "AbortError") {
@@ -99,6 +113,7 @@ export function NotificationProvider({ children }) {
 
     return () => {
       abortController.abort();
+
       window.clearInterval(refreshInterval);
     };
   }, []);
@@ -112,7 +127,7 @@ export function NotificationProvider({ children }) {
 
       localStorage.setItem(
         "issuer-notification-preferences",
-        JSON.stringify(updated)
+        JSON.stringify(updated),
       );
 
       return updated;
@@ -139,19 +154,14 @@ export function NotificationProvider({ children }) {
   };
 
   const visibleNotifications = useMemo(
-    () =>
-      notifications.filter(
-        isNotificationEnabled
-      ),
-    [notifications, preferences]
+    () => notifications.filter(isNotificationEnabled),
+    [notifications, preferences],
   );
 
   const unreadCount = useMemo(
     () =>
-      visibleNotifications.filter(
-        (notification) => !notification.read
-      ).length,
-    [visibleNotifications]
+      visibleNotifications.filter((notification) => !notification.read).length,
+    [visibleNotifications],
   );
 
   const markAsRead = (id) => {
@@ -162,8 +172,8 @@ export function NotificationProvider({ children }) {
               ...notification,
               read: true,
             }
-          : notification
-      )
+          : notification,
+      ),
     );
   };
 
@@ -175,24 +185,63 @@ export function NotificationProvider({ children }) {
               ...notification,
               read: true,
             }
-          : notification
-      )
+          : notification,
+      ),
     );
   };
 
-  const addNotification = ({ type, title, message, actionPage }) => {
-    setNotifications((current) => [
-      {
-        id: `notification:${Date.now()}:${Math.random().toString(36).slice(2)}`,
-        type,
-        title,
-        message,
-        createdAt: new Date().toISOString(),
-        read: false,
-        actionPage,
-      },
-      ...current,
-    ]);
+  /*
+    Used by other pages to create
+    new notifications.
+
+    Example types:
+    - verification
+    - issuance-failure
+    - batch-completed
+    - system
+  */
+  const addNotification = ({
+    type,
+    title,
+    message,
+    actionPage,
+    errorDetails,
+    errorCode,
+  }) => {
+    const isViewableError = type === "issuance-failure" || type === "system";
+
+    const newNotification = {
+      id: `notification:${Date.now()}:${Math.random().toString(36).slice(2)}`,
+
+      type,
+
+      title,
+
+      message,
+
+      createdAt: new Date().toISOString(),
+
+      read: false,
+
+      actionPage: actionPage || null,
+
+      errorDetails: errorDetails || null,
+
+      errorCode: errorCode || null,
+
+      /*
+        View appears only if:
+        1. it is an error type
+        2. actual error details exist
+      */
+      canView: isViewableError && Boolean(errorDetails),
+    };
+
+    setNotifications((current) =>
+      [newNotification, ...current].sort(
+        (a, b) => getNotificationTime(b) - getNotificationTime(a),
+      ),
+    );
   };
 
   return (
@@ -201,16 +250,36 @@ export function NotificationProvider({ children }) {
         notifications,
         visibleNotifications,
         unreadCount,
+
         preferences,
+
         updatePreference,
+
         markAsRead,
         markAllAsRead,
+
         addNotification,
       }}
     >
       {children}
     </NotificationContext.Provider>
   );
+}
+
+/*
+  Used to sort all notification
+  types by date/time.
+*/
+function getNotificationTime(notification) {
+  const value = notification.createdAt || notification.verifiedAt;
+
+  if (!value) {
+    return 0;
+  }
+
+  const time = new Date(value).getTime();
+
+  return Number.isNaN(time) ? 0 : time;
 }
 
 function getVerificationNotificationId(verification) {
@@ -222,7 +291,7 @@ export function useNotifications() {
 
   if (!context) {
     throw new Error(
-      "useNotifications must be used inside NotificationProvider"
+      "useNotifications must be used inside NotificationProvider",
     );
   }
 
