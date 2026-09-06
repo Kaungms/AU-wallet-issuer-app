@@ -18,7 +18,10 @@ function StudentData({ onReviewStudent }) {
   const [error, setError] = useState("");
 
   const connectedCount = useMemo(
-    () => results.filter((student) => student.walletEligibility === "verified").length,
+    () =>
+      results.filter((student) =>
+        ["verified", "issued"].includes(student.credentialStatus),
+      ).length,
     [results],
   );
 
@@ -149,7 +152,7 @@ function StudentData({ onReviewStudent }) {
               <span>
                 {pagination.total} student{pagination.total !== 1 ? "s" : ""}
               </span>
-              <span>{connectedCount} wallet verified on this page</span>
+              <span>{connectedCount} wallet connected on this page</span>
             </div>
 
             <div className="student-data-table-wrapper">
@@ -161,7 +164,7 @@ function StudentData({ onReviewStudent }) {
                     <th>Degree and major</th>
                     <th>Class</th>
                     <th>Graduation</th>
-                    <th>Wallet eligibility</th>
+                    <th>Status</th>
                     <th>Review</th>
                   </tr>
                 </thead>
@@ -181,7 +184,7 @@ function StudentData({ onReviewStudent }) {
                       <td>{student.graduationClass || "Not recorded"}</td>
                       <td>{formatDate(student.graduationDate)}</td>
                       <td>
-                        <WalletEligibility status={student.walletEligibility} />
+                        <CredentialStatus status={student.credentialStatus} />
                       </td>
                       <td>
                         <button
@@ -239,6 +242,8 @@ async function fetchStudentPage(searchQuery, page, signal) {
   const students = studentData.students.map((student) => ({
     ...student,
     walletEligibility: student.walletEligibility ?? "not_verified",
+    credentialStatus:
+      student.credentialStatus ?? student.walletEligibility ?? "not_verified",
   }));
 
   return {
@@ -269,17 +274,6 @@ function formatProgram(student) {
   return degree || major || "Not recorded";
 }
 
-function formatStatus(value) {
-  if (!value) {
-    return "Not recorded";
-  }
-
-  return value
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
-
 function formatDate(value) {
   if (!value) {
     return "Not recorded";
@@ -297,7 +291,15 @@ function formatDate(value) {
   }).format(date);
 }
 
-function WalletEligibility({ status }) {
+function CredentialStatus({ status }) {
+  if (status === "issued") {
+    return (
+      <span className="student-wallet-status student-wallet-status-issued">
+        <CheckCircle2 size={13} /> Issued
+      </span>
+    );
+  }
+
   return status === "verified" ? (
     <span className="student-wallet-status student-wallet-status-verified">
       <CheckCircle2 size={13} /> Verified

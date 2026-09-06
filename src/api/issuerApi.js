@@ -91,6 +91,44 @@ export async function getIssuerStudents({
   };
 }
 
+export async function getIssuedCredentials({
+  q = "",
+  page = DEFAULT_PAGE,
+  pageSize = DEFAULT_PAGE_SIZE,
+  signal,
+  apiBaseUrl,
+} = {}) {
+  const normalizedQuery = typeof q === "string" ? q.trim() : "";
+
+  if (normalizedQuery && normalizedQuery.length < 2) {
+    throw invalidRequest(
+      "Credential search must contain at least two characters.",
+      "q",
+    );
+  }
+
+  validatePagination(page, pageSize);
+
+  const envelope = await issuerRequest("/issuer/credentials", {
+    signal,
+    apiBaseUrl,
+    query: {
+      q: normalizedQuery || undefined,
+      page,
+      pageSize,
+    },
+  });
+
+  if (!Array.isArray(envelope.data?.credentials)) {
+    throw invalidResponse("Issued credentials have an invalid format.");
+  }
+
+  return {
+    ...envelope.data,
+    meta: envelope.meta,
+  };
+}
+
 export async function getStudentAcademicReview(
   studentNumber,
   { signal, apiBaseUrl } = {},
@@ -297,6 +335,11 @@ async function issuerRequest(
     headers["Content-Type"] = "application/json";
   }
 
+  const accessToken = getStoredAccessToken();
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
   let response;
 
   try {
@@ -357,6 +400,15 @@ async function issuerRequest(
   }
 
   return responseBody;
+}
+
+function getStoredAccessToken() {
+  if (typeof window === "undefined" || !window.localStorage) {
+    return null;
+  }
+
+  const token = window.localStorage.getItem("accessToken");
+  return typeof token === "string" && token.trim() ? token.trim() : null;
 }
 
 async function parseJsonResponse(response) {

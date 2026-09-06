@@ -186,6 +186,11 @@
   background: #e7f4ec;
 }
 
+.student-wallet-status-issued {
+  color: #24578f;
+  background: #e8f1fb;
+}
+
 .student-wallet-status-unverified {
   color: #a06424;
   background: #fbefdc;

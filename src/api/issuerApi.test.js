@@ -5,6 +5,7 @@ import {
   createAcademicTranscriptVc,
   getGraduatingStudents,
   getIssuerConnectionSummary,
+  getIssuedCredentials,
   getIssuerPrograms,
   getIssuerStudents,
   getStudentAcademicPreview,
@@ -156,6 +157,41 @@ test("builds the student list, review, and preview routes without extra calls", 
     "http://backend.test:3000/issuer/students/6512345/academic-preview",
   );
   assert.equal(requestUrls.length, 3);
+});
+
+test("loads only issued credentials with pagination", async () => {
+  let requestUrl;
+  globalThis.fetch = async (url) => {
+    requestUrl = new URL(url);
+    return jsonResponse({
+      data: {
+        credentials: [
+          {
+            credentialId: "credential-123",
+            studentNumber: "6499002",
+            major: "Computer Science",
+            credentialType: "academic_transcript",
+            issuedAt: "2026-09-06T10:00:00.000Z",
+            status: "issued",
+          },
+        ],
+      },
+      message: "Issued credentials loaded.",
+      meta: { page: 2, pageSize: 25, total: 26, totalPages: 2 },
+    });
+  };
+
+  const result = await getIssuedCredentials({
+    q: "6499002",
+    page: 2,
+    apiBaseUrl: API_BASE_URL,
+  });
+
+  assert.equal(requestUrl.pathname, "/issuer/credentials");
+  assert.equal(requestUrl.searchParams.get("q"), "6499002");
+  assert.equal(requestUrl.searchParams.get("page"), "2");
+  assert.equal(result.credentials[0].status, "issued");
+  assert.equal(result.meta.total, 26);
 });
 
 test("creates an academic transcript VC for the selected student", async () => {
