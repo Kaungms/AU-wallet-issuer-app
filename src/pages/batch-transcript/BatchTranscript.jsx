@@ -24,6 +24,8 @@ function BatchTranscript() {
   const [programCode, setProgramCode] = useState("");
   const [facultyOptions, setFacultyOptions] = useState([]);
   const [programOptions, setProgramOptions] = useState([]);
+  const [yearDefaultsPending, setYearDefaultsPending] = useState(false);
+  const [yearDefaultsRequest, setYearDefaultsRequest] = useState(0);
   const [filtersStatus, setFiltersStatus] = useState("loading");
   const [programsStatus, setProgramsStatus] = useState("idle");
   const [students, setStudents] = useState([]);
@@ -62,6 +64,28 @@ function BatchTranscript() {
   }, []);
 
   useEffect(() => {
+    if (
+      !yearDefaultsPending ||
+      !graduationYear ||
+      filtersStatus !== "ready" ||
+      facultyOptions.length === 0
+    ) {
+      return undefined;
+    }
+
+    setFacultyCode(facultyOptions[0].code);
+    setProgramCode("");
+    setProgramOptions([]);
+
+    return undefined;
+  }, [
+    facultyOptions,
+    filtersStatus,
+    graduationYear,
+    yearDefaultsPending,
+  ]);
+
+  useEffect(() => {
     if (!facultyCode) {
       return undefined;
     }
@@ -78,6 +102,12 @@ function BatchTranscript() {
         });
 
         setProgramOptions(programData.programs);
+        setProgramCode(
+          yearDefaultsPending
+            ? programData.programs[0]?.programCode ?? ""
+            : "",
+        );
+        setYearDefaultsPending(false);
         setProgramsStatus("ready");
       } catch (requestError) {
         if (requestError.name !== "AbortError") {
@@ -92,7 +122,7 @@ function BatchTranscript() {
     loadProgramOptions();
 
     return () => abortController.abort();
-  }, [facultyCode]);
+  }, [facultyCode, yearDefaultsRequest]);
 
   const connectedStudents = useMemo(
     () => students.filter((student) => student.walletEligibility === "verified"),
@@ -139,10 +169,19 @@ function BatchTranscript() {
 
   const handleGraduationYearChange = (event) => {
     setGraduationYear(event.target.value);
+    setYearDefaultsPending(Boolean(event.target.value));
+    if (event.target.value) {
+      setYearDefaultsRequest((request) => request + 1);
+    }
+    setFacultyCode(facultyOptions[0]?.code ?? "");
+    setProgramCode("");
+    setProgramOptions([]);
+    setProgramsStatus("idle");
     clearResults();
   };
 
   const handleFacultyChange = (event) => {
+    setYearDefaultsPending(false);
     setFacultyCode(event.target.value);
     setProgramCode("");
     setProgramOptions([]);

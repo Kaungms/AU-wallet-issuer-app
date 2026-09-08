@@ -8,7 +8,10 @@ import {
   Wallet,
 } from "lucide-react";
 
-import { getIssuerConnectionSummary } from "../../api/issuerApi";
+import {
+  getIssuedCredentials,
+  getIssuerConnectionSummary,
+} from "../../api/issuerApi";
 import "./dashboard.css";
 
 function Dashboard({ onPageChange }) {
@@ -19,6 +22,12 @@ function Dashboard({ onPageChange }) {
     useState([]);
 
   const [connectionSummaryStatus, setConnectionSummaryStatus] =
+    useState("loading");
+
+  const [issuedCredentialCount, setIssuedCredentialCount] =
+    useState(null);
+
+  const [issuedCredentialCountStatus, setIssuedCredentialCountStatus] =
     useState("loading");
 
   useEffect(() => {
@@ -52,7 +61,34 @@ function Dashboard({ onPageChange }) {
       }
     }
 
+    async function loadIssuedCredentialCount() {
+      try {
+        const issuedCredentials = await getIssuedCredentials({
+          page: 1,
+          pageSize: 1,
+          signal: abortController.signal,
+        });
+
+        if (!Number.isInteger(issuedCredentials.meta?.total)) {
+          throw new Error("Issued credential count is unavailable.");
+        }
+
+        setIssuedCredentialCount(issuedCredentials.meta.total);
+        setIssuedCredentialCountStatus("success");
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          console.error(
+            "Unable to load issued credential count.",
+            error,
+          );
+
+          setIssuedCredentialCountStatus("error");
+        }
+      }
+    }
+
     loadConnectionSummary();
+    loadIssuedCredentialCount();
 
     return () => abortController.abort();
   }, []);
@@ -61,6 +97,13 @@ function Dashboard({ onPageChange }) {
     connectionSummaryStatus === "success"
       ? verifiedConnectionCount
       : connectionSummaryStatus === "error"
+        ? "Unavailable"
+        : "Loading…";
+
+  const issuedCredentialsValue =
+    issuedCredentialCountStatus === "success"
+      ? issuedCredentialCount
+      : issuedCredentialCountStatus === "error"
         ? "Unavailable"
         : "Loading…";
 
@@ -82,7 +125,7 @@ function Dashboard({ onPageChange }) {
         <DashboardStatCard
           icon={FileCheck2}
           label="Transcripts Issued"
-          value="Not available"
+          value={issuedCredentialsValue}
           description="View all issued transcript credentials"
           onClick={() =>
             onPageChange?.("issued-credentials")
