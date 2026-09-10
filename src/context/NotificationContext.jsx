@@ -1,10 +1,32 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
-import { getIssuerConnectionSummary } from "../api/issuerApi";
+import {
+  getIssuedCredentials,
+  getIssuerConnectionSummary,
+} from "../api/issuerApi";
 
 const NotificationContext = createContext(null);
 
 const VERIFICATION_REFRESH_INTERVAL = 30_000;
+const STORED_NOTIFICATIONS_KEY = "issuer-notifications";
+
+function getStoredNotifications() {
+  try {
+    const stored = localStorage.getItem(STORED_NOTIFICATIONS_KEY);
+
+    if (stored) {
+      const notifications = JSON.parse(stored);
+
+      if (Array.isArray(notifications)) {
+        return notifications;
+      }
+    }
+  } catch (error) {
+    console.error("Unable to restore issuer notifications:", error);
+  }
+
+  return [];
+}
 
 function getStoredPreferences() {
   try {
@@ -26,18 +48,34 @@ function getStoredPreferences() {
 }
 
 export function NotificationProvider({ children }) {
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState(getStoredNotifications);
 
   const [preferences, setPreferences] = useState(getStoredPreferences);
+
+  useEffect(() => {
+    localStorage.setItem(
+      STORED_NOTIFICATIONS_KEY,
+      JSON.stringify(notifications),
+    );
+  }, [notifications]);
 
   useEffect(() => {
     const abortController = new AbortController();
 
     const loadVerificationNotifications = async () => {
       try {
-        const { recentVerifications } = await getIssuerConnectionSummary({
-          signal: abortController.signal,
-        });
+        const [connectionSummary, issuedCredentialPage] = await Promise.all([
+          getIssuerConnectionSummary({
+            signal: abortController.signal,
+          }),
+          getIssuedCredentials({
+            page: 1,
+            pageSize: 100,
+            signal: abortController.signal,
+          }),
+        ]);
+
+        const { recentVerifications } = connectionSummary;
 
         setNotifications((current) => {
           const notificationMap = new Map();
@@ -85,6 +123,24 @@ export function NotificationProvider({ children }) {
                       Verification was successful,
                       so there is nothing to inspect.
                     */
+              canView: false,
+            });
+          });
+
+          issuedCredentialPage.credentials.forEach((credential) => {
+            const id = getCredentialNotificationId(credential);
+            const existing = notificationMap.get(id);
+
+            notificationMap.set(id, {
+              id,
+              type: "credential-issued",
+              title: "Transcript credential issued",
+              message: `Academic transcript issued for student ${credential.studentNumber}.`,
+              studentNumber: credential.studentNumber,
+              major: credential.major,
+              issuedAt: credential.issuedAt,
+              actionPage: "issue-transcript",
+              read: existing?.read ?? false,
               canView: false,
             });
           });
@@ -207,6 +263,7 @@ export function NotificationProvider({ children }) {
     actionPage,
     errorDetails,
     errorCode,
+    studentNumber,
   }) => {
     const isViewableError = type === "issuance-failure" || type === "system";
 
@@ -224,6 +281,8 @@ export function NotificationProvider({ children }) {
       read: false,
 
       actionPage: actionPage || null,
+
+      studentNumber: studentNumber || null,
 
       errorDetails: errorDetails || null,
 
@@ -284,6 +343,10 @@ function getNotificationTime(notification) {
 
 function getVerificationNotificationId(verification) {
   return `verification:${verification.programCode}:${verification.verifiedAt}`;
+}
+
+function getCredentialNotificationId(credential) {
+  return `credential-issued:${credential.credentialId}`;
 }
 
 export function useNotifications() {

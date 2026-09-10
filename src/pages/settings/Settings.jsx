@@ -16,22 +16,15 @@ import { useNotifications } from "../../context/NotificationContext";
 import "./settings.css";
 
 function Settings() {
-  const [confirmSingleIssue, setConfirmSingleIssue] =
-    useState(true);
+  const [confirmSingleIssue, setConfirmSingleIssue] = useState(true);
 
-  const [confirmBatchIssue, setConfirmBatchIssue] =
-    useState(true);
+  const [confirmBatchIssue, setConfirmBatchIssue] = useState(true);
 
-  const [defaultWalletFilter, setDefaultWalletFilter] =
-    useState("all");
+  const [defaultWalletFilter, setDefaultWalletFilter] = useState("all");
 
-  const [showLogoutModal, setShowLogoutModal] =
-    useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  const {
-    preferences,
-    updatePreference,
-  } = useNotifications();
+  const { preferences, updatePreference } = useNotifications();
 
   const handleLogout = () => {
     /*
@@ -41,7 +34,8 @@ function Settings() {
       authentication/session flow.
     */
 
-    localStorage.removeItem("authToken");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("issuer-admin");
     sessionStorage.clear();
 
     setShowLogoutModal(false);
@@ -66,8 +60,7 @@ function Settings() {
               <h2>Issuer Information</h2>
 
               <p>
-                University and credential issuer
-                information used by the portal.
+                University and credential issuer information used by the portal.
               </p>
             </div>
           </div>
@@ -78,10 +71,7 @@ function Settings() {
               value="Assumption University"
             />
 
-            <SettingsInfoRow
-              label="Issuer"
-              value="AU Registrar"
-            />
+            <SettingsInfoRow label="Issuer" value="AU Registrar" />
 
             <SettingsInfoRow
               label="Issuer DID"
@@ -110,8 +100,7 @@ function Settings() {
               <h2>System Connections</h2>
 
               <p>
-                Connection status of services required
-                by the issuer portal.
+                Connection status of services required by the issuer portal.
               </p>
             </div>
           </div>
@@ -154,8 +143,7 @@ function Settings() {
               <h2>Issuance Preferences</h2>
 
               <p>
-                Configure how transcript issuance
-                behaves in the issuer portal.
+                Configure how transcript issuance behaves in the issuer portal.
               </p>
             </div>
           </div>
@@ -177,35 +165,23 @@ function Settings() {
 
             <div className="settings-select-row">
               <div>
-                <h3>
-                  Default batch wallet filter
-                </h3>
+                <h3>Default batch wallet filter</h3>
 
                 <p>
-                  Choose which wallet-status view
-                  appears first in batch issuance.
+                  Choose which wallet-status view appears first in batch
+                  issuance.
                 </p>
               </div>
 
               <select
                 value={defaultWalletFilter}
-                onChange={(event) =>
-                  setDefaultWalletFilter(
-                    event.target.value
-                  )
-                }
+                onChange={(event) => setDefaultWalletFilter(event.target.value)}
               >
-                <option value="all">
-                  All
-                </option>
+                <option value="all">All</option>
 
-                <option value="connected">
-                  Connected
-                </option>
+                <option value="connected">Connected</option>
 
-                <option value="not-connected">
-                  Not Connected
-                </option>
+                <option value="not-connected">Not Connected</option>
               </select>
             </div>
           </div>
@@ -225,9 +201,7 @@ function Settings() {
               <h2>Notifications</h2>
 
               <p>
-                Choose which operational
-                notifications are shown in the
-                portal.
+                Choose which operational notifications are shown in the portal.
               </p>
             </div>
           </div>
@@ -236,57 +210,29 @@ function Settings() {
             <ToggleRow
               title="Automatic student verification"
               description="Show notifications when automatic verification results are available."
-              checked={
-                preferences.verification
-              }
-              onChange={(value) =>
-                updatePreference(
-                  "verification",
-                  value
-                )
-              }
+              checked={preferences.verification}
+              onChange={(value) => updatePreference("verification", value)}
             />
 
             <ToggleRow
               title="Transcript issuance failure"
               description="Notify when a transcript could not be issued successfully."
-              checked={
-                preferences.issuanceFailure
-              }
-              onChange={(value) =>
-                updatePreference(
-                  "issuanceFailure",
-                  value
-                )
-              }
+              checked={preferences.issuanceFailure}
+              onChange={(value) => updatePreference("issuanceFailure", value)}
             />
 
             <ToggleRow
               title="Batch issuance completed"
               description="Show a notification when a batch issuance operation finishes."
-              checked={
-                preferences.batchCompleted
-              }
-              onChange={(value) =>
-                updatePreference(
-                  "batchCompleted",
-                  value
-                )
-              }
+              checked={preferences.batchCompleted}
+              onChange={(value) => updatePreference("batchCompleted", value)}
             />
 
             <ToggleRow
               title="System connection problems"
               description="Notify when a required issuer service becomes unavailable."
-              checked={
-                preferences.system
-              }
-              onChange={(value) =>
-                updatePreference(
-                  "system",
-                  value
-                )
-              }
+              checked={preferences.system}
+              onChange={(value) => updatePreference("system", value)}
             />
           </div>
         </section>
@@ -304,18 +250,13 @@ function Settings() {
             <div>
               <h2>Account & Security</h2>
 
-              <p>
-                Manage the current registrar session
-                and account access.
-              </p>
+              <p>Manage the current registrar session and account access.</p>
             </div>
           </div>
 
           <div className="settings-account-content">
             <div className="settings-account-profile">
-              <div className="settings-account-avatar">
-                AR
-              </div>
+              <div className="settings-account-avatar">AR</div>
 
               <div>
                 <span>Signed in as</span>
@@ -329,9 +270,7 @@ function Settings() {
             <button
               type="button"
               className="settings-logout-button"
-              onClick={() =>
-                setShowLogoutModal(true)
-              }
+              onClick={() => setShowLogoutModal(true)}
             >
               <LogOut size={16} />
               Log Out
@@ -347,22 +286,16 @@ function Settings() {
       {showLogoutModal && (
         <div
           className="settings-modal-overlay"
-          onMouseDown={() =>
-            setShowLogoutModal(false)
-          }
+          onMouseDown={() => setShowLogoutModal(false)}
         >
           <div
             className="settings-modal"
-            onMouseDown={(event) =>
-              event.stopPropagation()
-            }
+            onMouseDown={(event) => event.stopPropagation()}
           >
             <button
               type="button"
               className="settings-modal-close"
-              onClick={() =>
-                setShowLogoutModal(false)
-              }
+              onClick={() => setShowLogoutModal(false)}
               aria-label="Close logout confirmation"
             >
               <X size={17} />
@@ -375,17 +308,14 @@ function Settings() {
             <h2>Log out?</h2>
 
             <p>
-              Are you sure you want to log out of
-              the AU Wallet Issuer Portal?
+              Are you sure you want to log out of the AU Wallet Issuer Portal?
             </p>
 
             <div className="settings-modal-actions">
               <button
                 type="button"
                 className="settings-cancel-button"
-                onClick={() =>
-                  setShowLogoutModal(false)
-                }
+                onClick={() => setShowLogoutModal(false)}
               >
                 Cancel
               </button>
@@ -410,22 +340,12 @@ function Settings() {
    INFORMATION ROW
 ===================================== */
 
-function SettingsInfoRow({
-  label,
-  value,
-  mono = false,
-}) {
+function SettingsInfoRow({ label, value, mono = false }) {
   return (
     <div className="settings-info-row">
       <span>{label}</span>
 
-      <strong
-        className={
-          mono ? "settings-mono" : ""
-        }
-      >
-        {value}
-      </strong>
+      <strong className={mono ? "settings-mono" : ""}>{value}</strong>
     </div>
   );
 }
@@ -434,12 +354,7 @@ function SettingsInfoRow({
    CONNECTION ROW
 ===================================== */
 
-function ConnectionRow({
-  icon: Icon,
-  label,
-  description,
-  status,
-}) {
+function ConnectionRow({ icon: Icon, label, description, status }) {
   return (
     <div className="settings-connection-row">
       <div className="settings-connection-info">
@@ -466,12 +381,7 @@ function ConnectionRow({
    TOGGLE ROW
 ===================================== */
 
-function ToggleRow({
-  title,
-  description,
-  checked,
-  onChange,
-}) {
+function ToggleRow({ title, description, checked, onChange }) {
   return (
     <div className="settings-toggle-row">
       <div>
@@ -482,14 +392,8 @@ function ToggleRow({
 
       <button
         type="button"
-        className={`settings-toggle ${
-          checked
-            ? "settings-toggle-active"
-            : ""
-        }`}
-        onClick={() =>
-          onChange(!checked)
-        }
+        className={`settings-toggle ${checked ? "settings-toggle-active" : ""}`}
+        onClick={() => onChange(!checked)}
         aria-pressed={checked}
       >
         <span />

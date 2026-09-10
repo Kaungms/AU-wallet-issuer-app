@@ -25,10 +25,7 @@
   margin: 0 0 7px;
   color: #241d1b;
 
-  font-family:
-    "Fraunces",
-    Georgia,
-    serif;
+  font-family: "Fraunces", Georgia, serif;
 
   font-size: 27px;
   font-weight: 600;
@@ -205,6 +202,13 @@
 
 .notification-item:hover {
   background: #fcfaf9;
+}
+
+.notification-item:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid #cc1919;
+  outline-offset: -2px;
 }
 
 .notification-item-unread {
@@ -439,10 +443,7 @@
 
   color: #443936;
 
-  font-family:
-    "Fraunces",
-    Georgia,
-    serif;
+  font-family: "Fraunces", Georgia, serif;
 
   font-size: 16px;
   font-weight: 600;

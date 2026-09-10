@@ -561,6 +561,26 @@
   font-size: 10px !important;
 }
 
+.batch-credential-action {
+  min-height: 30px;
+  padding: 0 8px;
+
+  color: #5f332d;
+  background: #ffffff;
+
+  border: 1px solid #dfc0ba;
+  border-radius: 6px;
+
+  font: inherit;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.batch-credential-action:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
 /* =====================================
    WALLET STATUS
 ===================================== */
@@ -583,6 +603,16 @@
 .wallet-status-connected {
   color: #28744a;
   background: #e7f4ec;
+}
+
+.wallet-status-issued {
+  color: #9b3f2f;
+  background: #f8e5df;
+}
+
+.wallet-status-revoked {
+  color: #6e6260;
+  background: #eee9e7;
 }
 
 .wallet-status-not-connected {
@@ -648,6 +678,14 @@
   color: #cc1919;
 }
 
+.batch-action-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .batch-issue-button {
   min-height: 40px;
   padding: 0 16px;
@@ -664,6 +702,26 @@
 }
 
 .batch-issue-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.batch-revoke-button {
+  min-height: 40px;
+  padding: 0 16px;
+
+  color: #ffffff;
+  background: #9b3f2f;
+  border: none;
+  border-radius: 8px;
+
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.batch-revoke-button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
@@ -696,8 +754,7 @@
 
 @media (max-width: 1150px) {
   .batch-filter-form {
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .batch-filter-form .batch-primary-button {
@@ -707,8 +764,7 @@
 
 @media (max-width: 1000px) {
   .batch-summary-grid {
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

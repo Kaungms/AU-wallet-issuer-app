@@ -8,65 +8,60 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-import {
-  useNotifications,
-} from "../../context/NotificationContext";
+import { useNotifications } from "../../context/NotificationContext";
 
 import "./notifications.css";
 
-function Notifications() {
-  const {
-    visibleNotifications,
-    markAsRead,
-    markAllAsRead,
-  } = useNotifications();
+function Notifications({ onPageChange }) {
+  const { visibleNotifications, markAsRead, markAllAsRead } =
+    useNotifications();
 
-  const [activeFilter, setActiveFilter] =
-    useState("all");
+  const [activeFilter, setActiveFilter] = useState("all");
 
-  const [
-    expandedNotificationId,
-    setExpandedNotificationId,
-  ] = useState(null);
+  const [expandedNotificationId, setExpandedNotificationId] = useState(null);
 
-  const unreadCount =
-    visibleNotifications.filter(
-      (notification) => !notification.read,
-    ).length;
+  const unreadCount = visibleNotifications.filter(
+    (notification) => !notification.read,
+  ).length;
 
   const filteredNotifications = useMemo(() => {
     if (activeFilter === "unread") {
-      return visibleNotifications.filter(
-        (notification) => !notification.read,
-      );
+      return visibleNotifications.filter((notification) => !notification.read);
     }
 
     return visibleNotifications;
   }, [visibleNotifications, activeFilter]);
 
-  const handleNotificationClick = (
-    notification,
-  ) => {
+  const handleNotificationClick = (notification) => {
     if (!notification.read) {
       markAsRead(notification.id);
     }
+
+    if (notification.actionPage) {
+      onPageChange?.(
+        notification.actionPage,
+        notification.studentNumber ? "single" : null,
+        notification.studentNumber || "",
+      );
+    }
   };
 
-  const handleViewError = (
-    event,
-    notification,
-  ) => {
+  const handleNotificationKeyDown = (event, notification) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handleNotificationClick(notification);
+    }
+  };
+
+  const handleViewError = (event, notification) => {
     event.stopPropagation();
 
     if (!notification.read) {
       markAsRead(notification.id);
     }
 
-    setExpandedNotificationId(
-      (current) =>
-        current === notification.id
-          ? null
-          : notification.id,
+    setExpandedNotificationId((current) =>
+      current === notification.id ? null : notification.id,
     );
   };
 
@@ -78,37 +73,23 @@ function Notifications() {
             <button
               type="button"
               className={`notifications-filter-tab ${
-                activeFilter === "all"
-                  ? "notifications-filter-active"
-                  : ""
+                activeFilter === "all" ? "notifications-filter-active" : ""
               }`}
-              onClick={() =>
-                setActiveFilter("all")
-              }
+              onClick={() => setActiveFilter("all")}
             >
               All
-
-              <span>
-                {visibleNotifications.length}
-              </span>
+              <span>{visibleNotifications.length}</span>
             </button>
 
             <button
               type="button"
               className={`notifications-filter-tab ${
-                activeFilter === "unread"
-                  ? "notifications-filter-active"
-                  : ""
+                activeFilter === "unread" ? "notifications-filter-active" : ""
               }`}
-              onClick={() =>
-                setActiveFilter("unread")
-              }
+              onClick={() => setActiveFilter("unread")}
             >
               Unread
-
-              <span>
-                {unreadCount}
-              </span>
+              <span>{unreadCount}</span>
             </button>
           </div>
 
@@ -130,34 +111,21 @@ function Notifications() {
 
               <h2>No notifications</h2>
 
-              <p>
-                There are no notifications to display.
-              </p>
+              <p>There are no notifications to display.</p>
             </div>
           ) : (
-            filteredNotifications.map(
-              (notification) => (
-                <NotificationItem
-                  key={notification.id}
-                  notification={notification}
-                  expanded={
-                    expandedNotificationId ===
-                    notification.id
-                  }
-                  onClick={() =>
-                    handleNotificationClick(
-                      notification,
-                    )
-                  }
-                  onView={(event) =>
-                    handleViewError(
-                      event,
-                      notification,
-                    )
-                  }
-                />
-              ),
-            )
+            filteredNotifications.map((notification) => (
+              <NotificationItem
+                key={notification.id}
+                notification={notification}
+                expanded={expandedNotificationId === notification.id}
+                onClick={() => handleNotificationClick(notification)}
+                onKeyDown={(event) =>
+                  handleNotificationKeyDown(event, notification)
+                }
+                onView={(event) => handleViewError(event, notification)}
+              />
+            ))
           )}
         </div>
       </section>
@@ -169,65 +137,47 @@ function NotificationItem({
   notification,
   expanded,
   onClick,
+  onKeyDown,
   onView,
 }) {
-  const {
-    Icon,
-    iconClass,
-  } = getNotificationAppearance(
-    notification.type,
-  );
+  const { Icon, iconClass } = getNotificationAppearance(notification.type);
 
   /*
     View appears ONLY when there is
     something useful for the admin to inspect.
   */
   const canViewError =
-    notification.canView === true &&
-    Boolean(notification.errorDetails);
+    notification.canView === true && Boolean(notification.errorDetails);
 
   return (
     <div
       className={`notification-item ${
-        !notification.read
-          ? "notification-item-unread"
-          : ""
+        !notification.read ? "notification-item-unread" : ""
       }`}
       onClick={onClick}
+      onKeyDown={onKeyDown}
+      role="button"
+      tabIndex={0}
     >
-      <div
-        className={`notification-item-icon ${iconClass}`}
-      >
+      <div className={`notification-item-icon ${iconClass}`}>
         <Icon size={17} />
       </div>
 
       <div className="notification-item-content">
         <div className="notification-title-row">
-          <h3>
-            {notification.title}
-          </h3>
+          <h3>{notification.title}</h3>
 
           {!notification.read && (
-            <span
-              className="notification-unread-dot"
-              aria-label="Unread"
-            />
+            <span className="notification-unread-dot" aria-label="Unread" />
           )}
         </div>
 
-        {notification.message && (
-          <p>
-            {notification.message}
-          </p>
-        )}
+        {notification.message && <p>{notification.message}</p>}
 
         {notification.programCode && (
           <div className="notification-verification-details">
             <span>
-              Program:{" "}
-              <strong>
-                {notification.programCode}
-              </strong>
+              Program: <strong>{notification.programCode}</strong>
             </span>
 
             {notification.major && (
@@ -235,10 +185,7 @@ function NotificationItem({
                 <span>•</span>
 
                 <span>
-                  Major:{" "}
-                  <strong>
-                    {notification.major}
-                  </strong>
+                  Major: <strong>{notification.major}</strong>
                 </span>
               </>
             )}
@@ -248,55 +195,43 @@ function NotificationItem({
         {notification.verifiedAt && (
           <time
             className="notification-time"
-            dateTime={
-              notification.verifiedAt
-            }
+            dateTime={notification.verifiedAt}
           >
-            {formatNotificationDate(
-              notification.verifiedAt,
-            )}
+            {formatNotificationDate(notification.verifiedAt)}
           </time>
         )}
 
         {notification.createdAt && (
-          <time
-            className="notification-time"
-            dateTime={
-              notification.createdAt
-            }
-          >
-            {formatNotificationDate(
-              notification.createdAt,
-            )}
+          <time className="notification-time" dateTime={notification.createdAt}>
+            {formatNotificationDate(notification.createdAt)}
           </time>
         )}
 
-        {expanded &&
-          notification.errorDetails && (
-            <div className="notification-error-details">
-              <div className="notification-error-heading">
-                <AlertTriangle size={15} />
+        {notification.issuedAt && (
+          <time className="notification-time" dateTime={notification.issuedAt}>
+            Issued {formatNotificationDate(notification.issuedAt)}
+          </time>
+        )}
 
-                <strong>
-                  Error Details
-                </strong>
-              </div>
+        {expanded && notification.errorDetails && (
+          <div className="notification-error-details">
+            <div className="notification-error-heading">
+              <AlertTriangle size={15} />
 
-              {notification.errorCode && (
-                <div className="notification-error-code">
-                  <span>Error code</span>
-
-                  <strong>
-                    {notification.errorCode}
-                  </strong>
-                </div>
-              )}
-
-              <p>
-                {notification.errorDetails}
-              </p>
+              <strong>Error Details</strong>
             </div>
-          )}
+
+            {notification.errorCode && (
+              <div className="notification-error-code">
+                <span>Error code</span>
+
+                <strong>{notification.errorCode}</strong>
+              </div>
+            )}
+
+            <p>{notification.errorDetails}</p>
+          </div>
+        )}
       </div>
 
       {canViewError && (
@@ -317,36 +252,33 @@ function getNotificationAppearance(type) {
     case "verification":
       return {
         Icon: ShieldCheck,
-        iconClass:
-          "notification-icon-verification",
+        iconClass: "notification-icon-verification",
       };
 
     case "issuance-failure":
       return {
         Icon: AlertTriangle,
-        iconClass:
-          "notification-icon-warning",
+        iconClass: "notification-icon-warning",
       };
 
     case "system":
       return {
         Icon: AlertTriangle,
-        iconClass:
-          "notification-icon-system",
+        iconClass: "notification-icon-system",
       };
 
     case "batch-completed":
+    case "credential-issued":
+    case "vc-created":
       return {
         Icon: CheckCircle2,
-        iconClass:
-          "notification-icon-success",
+        iconClass: "notification-icon-success",
       };
 
     default:
       return {
         Icon: CheckCircle2,
-        iconClass:
-          "notification-icon-success",
+        iconClass: "notification-icon-success",
       };
   }
 }
@@ -358,13 +290,10 @@ function formatNotificationDate(value) {
     return value;
   }
 
-  return new Intl.DateTimeFormat(
-    undefined,
-    {
-      dateStyle: "medium",
-      timeStyle: "short",
-    },
-  ).format(date);
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
 }
 
 export default Notifications;

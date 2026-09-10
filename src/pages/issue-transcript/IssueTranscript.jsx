@@ -3,8 +3,10 @@ import { CheckCircle2, FileClock, Search, Wallet, XCircle } from "lucide-react";
 
 import {
   createAcademicTranscriptVc,
+  getIssuedCredentials,
   getStudentAcademicPreview,
   getStudentAcademicReview,
+  revokeCredential,
 } from "../../api/issuerApi";
 import { useNotifications } from "../../context/NotificationContext";
 import BatchTranscript from "../batch-transcript/BatchTranscript";
@@ -155,8 +157,6 @@ function SingleTranscript({ initialStudentId, onStudentChange }) {
 
   return (
     <div className="issue-transcript-page">
-
-
       <section className="issue-card student-search-card">
         <div className="issue-search-heading">
           <div className="issue-search-icon">
@@ -233,10 +233,12 @@ function SingleTranscript({ initialStudentId, onStudentChange }) {
 }
 
 async function fetchStudentReview(studentNumber, signal) {
-  const [review, preview] = await Promise.all([
+  const [review, preview, credentialPage] = await Promise.all([
     getStudentAcademicReview(studentNumber, { signal }),
     getStudentAcademicPreview(studentNumber, { signal }),
+    getIssuedCredentials({ q: studentNumber, signal }),
   ]);
+  const credential = credentialPage.credentials[0] ?? null;
 
   return {
     ...review,
@@ -248,6 +250,10 @@ async function fetchStudentReview(studentNumber, signal) {
       review.creditSummary?.transferred ?? preview.transferCredits ?? null,
     terms: preview.terms,
     unassignedResults: preview.unassignedResults ?? [],
+    credentialStatus: credential
+      ? credential.status || "pending"
+      : "not_issued",
+    credentialId: credential?.credentialId ?? null,
   };
 }
 
@@ -257,6 +263,11 @@ function StudentAcademicReview({ student }) {
   const [issuanceStatus, setIssuanceStatus] = useState("idle");
   const [issuanceError, setIssuanceError] = useState("");
   const [issuanceResult, setIssuanceResult] = useState(null);
+  const [credentialStatus, setCredentialStatus] = useState(
+    student.credentialStatus,
+  );
+  const [credentialId, setCredentialId] = useState(student.credentialId);
+  const [credentialAction, setCredentialAction] = useState("");
 
   const handleCreateVc = async () => {
     setIssuanceStatus("loading");
@@ -265,14 +276,18 @@ function StudentAcademicReview({ student }) {
 
     try {
       const createdVc = await createAcademicTranscriptVc(student.studentNumber);
+      const createdCredential = createdVc.credential ?? createdVc;
 
       setIssuanceResult(createdVc);
+      setCredentialStatus(createdCredential.status || "pending");
+      setCredentialId(createdCredential.credentialId ?? null);
       setIssuanceStatus("success");
       addNotification({
         type: "vc-created",
         title: "Transcript VC created",
         message: `A transcript VC was created for ${student.fullName} (${student.studentNumber}).`,
         actionPage: "issue-transcript",
+        studentNumber: student.studentNumber,
       });
     } catch (requestError) {
       if (requestError.name !== "AbortError") {
@@ -283,6 +298,59 @@ function StudentAcademicReview({ student }) {
       }
     }
   };
+
+  const handleRevokeCredential = async () => {
+    if (!credentialId || issuanceStatus === "revoking") {
+      return;
+    }
+
+    setIssuanceStatus("revoking");
+    setIssuanceError("");
+    setIssuanceResult(null);
+
+    try {
+      const revokedCredential = await revokeCredential(credentialId);
+
+      setCredentialStatus("revoked");
+      setIssuanceResult(revokedCredential);
+      setIssuanceStatus("revoked");
+      addNotification({
+        type: "system",
+        title: "Transcript credential revoked",
+        message: `The transcript credential for ${student.fullName} was revoked.`,
+        actionPage: "issue-transcript",
+        studentNumber: student.studentNumber,
+      });
+    } catch (requestError) {
+      if (requestError.name !== "AbortError") {
+        if (requestError.status === 404) {
+          setCredentialStatus("revoked");
+          setCredentialId(null);
+          setIssuanceResult(null);
+          setIssuanceStatus("revoked");
+          addNotification({
+            type: "system",
+            title: "Transcript credential no longer available",
+            message: `The credential for ${student.fullName} is no longer available and can be created again.`,
+            actionPage: "issue-transcript",
+            studentNumber: student.studentNumber,
+          });
+          return;
+        }
+
+        setIssuanceStatus("error");
+        setIssuanceError(
+          requestError.message || "The credential could not be revoked.",
+        );
+      }
+    }
+  };
+
+  const credentialIsIssued = credentialStatus === "issued";
+  const credentialIsRevoked = credentialStatus === "revoked";
+  const credentialExists = Boolean(credentialId);
+  const credentialIsPending =
+    credentialExists && !credentialIsIssued && !credentialIsRevoked;
 
   return (
     <>
@@ -455,32 +523,81 @@ function StudentAcademicReview({ student }) {
             )}
           </div>
           <div>
-            <h2>Ready to create VC</h2>
+            <h2>
+              {credentialIsIssued
+                ? "Transcript VC already issued"
+                : credentialIsPending
+                  ? "Transcript VC pending wallet claim"
+                  : walletVerified
+                    ? "Ready to create VC"
+                    : "Wallet verification required"}
+            </h2>
             <p>
-              The reviewed student and academic record remain selected. The
-              button below now calls the backend VC creation route for this
-              exact student record.
+              {credentialIsIssued
+                ? "This student already has an issued transcript credential. Use the action menu to revoke it."
+                : credentialIsPending
+                  ? "This transcript VC is waiting for the student to claim it. No new VC can be created until this credential is claimed."
+                  : walletVerified
+                    ? "The reviewed student and academic record remain selected. The button below now calls the backend VC creation route for this exact student record."
+                    : "This student account is not verified. Verify the student's wallet account before creating a VC."}
             </p>
           </div>
         </div>
 
-        <button
-          className="issue-credential-button"
-          type="button"
-          disabled={issuanceStatus === "loading"}
-          onClick={handleCreateVc}
-        >
-          {issuanceStatus === "loading" ? "Creating VC…" : "Create VC"}
-        </button>
+        {credentialIsIssued ? (
+          <div className="issue-credential-actions">
+            <select
+              className="issue-credential-action"
+              value={credentialAction}
+              disabled={issuanceStatus === "revoking"}
+              onChange={(event) => setCredentialAction(event.target.value)}
+            >
+              <option value="">Actions</option>
+              <option value="revoke">Revoke credential</option>
+            </select>
+            <button
+              className="issue-credential-revoke-button"
+              type="button"
+              disabled={
+                credentialAction !== "revoke" || issuanceStatus === "revoking"
+              }
+              onClick={handleRevokeCredential}
+            >
+              {issuanceStatus === "revoking" ? "Revoking…" : "Revoke VC"}
+            </button>
+          </div>
+        ) : credentialIsPending ? (
+          <div className="issuance-unverified-message" role="status">
+            Pending student claim
+          </div>
+        ) : walletVerified ? (
+          <button
+            className="issue-credential-button"
+            type="button"
+            disabled={issuanceStatus === "loading"}
+            onClick={handleCreateVc}
+          >
+            {issuanceStatus === "loading" ? "Creating VC…" : "Create VC"}
+          </button>
+        ) : (
+          <div className="issuance-unverified-message" role="status">
+            Student account not verified
+          </div>
+        )}
 
-        {issuanceStatus === "success" && (
+        {(issuanceStatus === "success" || issuanceStatus === "revoked") && (
           <div className="issuance-success-message" role="status">
             <div className="success-checkmark">✓</div>
             <div>
-              <h2>VC created for {student.fullName}</h2>
+              <h2>
+                {issuanceStatus === "revoked"
+                  ? `VC revoked for ${student.fullName}`
+                  : `VC created for ${student.fullName}`}
+              </h2>
               <p>
-                Student {student.studentNumber} was sent to the backend VC
-                route.
+                {issuanceStatus === "revoked"
+                  ? `The credential for student ${student.studentNumber} is no longer available. You can create a new VC.`
+                  : `Student ${student.studentNumber} was sent to the backend VC route.`}
                 {issuanceResult?.credentialId
                   ? ` Credential ID: ${issuanceResult.credentialId}.`
                   : ""}
@@ -660,7 +777,11 @@ function formatCredits(completed, transferred, required) {
   const transferredValue = Number(transferred) || 0;
   const requiredValue = Number(required) || 0;
 
-  if (Number.isNaN(completedValue) && Number.isNaN(transferredValue) && Number.isNaN(requiredValue)) {
+  if (
+    Number.isNaN(completedValue) &&
+    Number.isNaN(transferredValue) &&
+    Number.isNaN(requiredValue)
+  ) {
     return "Not recorded";
   }
 

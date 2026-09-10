@@ -896,6 +896,63 @@
   cursor: not-allowed;
 }
 
+.issuance-unverified-message {
+  max-width: 210px;
+  color: #a06424;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.issue-credential-action {
+  min-width: 210px;
+  min-height: 42px;
+  padding: 0 12px;
+
+  color: #5f332d;
+  background: #ffffff;
+
+  border: 1px solid #dfc0ba;
+  border-radius: 8px;
+
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.issue-credential-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.issue-credential-revoke-button {
+  min-height: 42px;
+  padding: 0 14px;
+
+  color: #ffffff;
+  background: #9b3f2f;
+
+  border: 1px solid #9b3f2f;
+  border-radius: 8px;
+
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.issue-credential-revoke-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.issue-credential-action:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
 /* ========================================
    SUCCESS / ERROR
 ======================================== */

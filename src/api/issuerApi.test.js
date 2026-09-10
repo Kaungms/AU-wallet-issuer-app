@@ -10,6 +10,7 @@ import {
   getIssuerStudents,
   getStudentAcademicPreview,
   getStudentAcademicReview,
+  revokeCredential,
   resolveWalletEligibility,
 } from "./issuerApi.js";
 
@@ -227,6 +228,36 @@ test("creates an academic transcript VC for the selected student", async () => {
   assert.deepEqual(JSON.parse(request.options.body), {
     studentNumber: "6499002",
   });
+});
+
+test("revokes an issued credential by credential ID", async () => {
+  let request;
+  globalThis.fetch = async (url, options) => {
+    request = { url, options };
+
+    return jsonResponse({
+      data: {
+        credentialId: "vc_123",
+        status: "revoked",
+      },
+      message: "Credential revoked.",
+      meta: {},
+    });
+  };
+
+  const result = await revokeCredential("vc_123", {
+    apiBaseUrl: API_BASE_URL,
+  });
+
+  assert.deepEqual(result, {
+    credentialId: "vc_123",
+    status: "revoked",
+  });
+  assert.equal(
+    request.url,
+    "http://backend.test:3000/issuer/credentials/vc_123/revoke",
+  );
+  assert.equal(request.options.method, "POST");
 });
 
 test("sends unique student numbers to wallet eligibility resolution", async () => {

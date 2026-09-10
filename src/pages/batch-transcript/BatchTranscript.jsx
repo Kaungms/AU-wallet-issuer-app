@@ -1,17 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  CheckCircle2,
-  Send,
-  Users,
-  Wallet,
-  XCircle,
-} from "lucide-react";
+import { CheckCircle2, Send, Users, Wallet, XCircle } from "lucide-react";
 
 import {
   createAcademicTranscriptVc,
   getGraduatingStudents,
   getIssuerPrograms,
   getIssuerStudents,
+  getIssuedCredentials,
+  revokeCredential,
   resolveWalletEligibility,
 } from "../../api/issuerApi";
 import { useNotifications } from "../../context/NotificationContext";
@@ -35,6 +31,7 @@ function BatchTranscript() {
   const [error, setError] = useState("");
   const [issuanceStatus, setIssuanceStatus] = useState("idle");
   const [issuanceSummary, setIssuanceSummary] = useState(null);
+  const [revokeSelectionIds, setRevokeSelectionIds] = useState([]);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -52,7 +49,9 @@ function BatchTranscript() {
       } catch (requestError) {
         if (requestError.name !== "AbortError") {
           setFiltersStatus("error");
-          setError(requestError.message || "Graduation filters could not be loaded.");
+          setError(
+            requestError.message || "Graduation filters could not be loaded.",
+          );
           setStatus("error");
         }
       }
@@ -78,12 +77,7 @@ function BatchTranscript() {
     setProgramOptions([]);
 
     return undefined;
-  }, [
-    facultyOptions,
-    filtersStatus,
-    graduationYear,
-    yearDefaultsPending,
-  ]);
+  }, [facultyOptions, filtersStatus, graduationYear, yearDefaultsPending]);
 
   useEffect(() => {
     if (!facultyCode) {
@@ -104,7 +98,7 @@ function BatchTranscript() {
         setProgramOptions(programData.programs);
         setProgramCode(
           yearDefaultsPending
-            ? programData.programs[0]?.programCode ?? ""
+            ? (programData.programs[0]?.programCode ?? "")
             : "",
         );
         setYearDefaultsPending(false);
@@ -113,7 +107,9 @@ function BatchTranscript() {
         if (requestError.name !== "AbortError") {
           setProgramOptions([]);
           setProgramsStatus("error");
-          setError(requestError.message || "Program options could not be loaded.");
+          setError(
+            requestError.message || "Program options could not be loaded.",
+          );
           setStatus("error");
         }
       }
@@ -125,12 +121,14 @@ function BatchTranscript() {
   }, [facultyCode, yearDefaultsRequest]);
 
   const connectedStudents = useMemo(
-    () => students.filter((student) => student.walletEligibility === "verified"),
+    () =>
+      students.filter((student) => student.walletEligibility === "verified"),
     [students],
   );
 
   const notConnectedStudents = useMemo(
-    () => students.filter((student) => student.walletEligibility !== "verified"),
+    () =>
+      students.filter((student) => student.walletEligibility !== "verified"),
     [students],
   );
 
@@ -147,13 +145,41 @@ function BatchTranscript() {
   }, [connectedStudents, notConnectedStudents, students, walletFilter]);
 
   const selectedStudents = useMemo(
-    () => students.filter((student) => selectedIds.includes(student.studentNumber)),
+    () =>
+      students.filter((student) => selectedIds.includes(student.studentNumber)),
     [selectedIds, students],
   );
 
+  const selectedCreateStudents = useMemo(
+    () =>
+      selectedStudents.filter(
+        (student) =>
+          student.walletEligibility === "verified" &&
+          student.credentialStatus !== "issued",
+      ),
+    [selectedStudents],
+  );
+
+  const selectedRevokeStudents = useMemo(
+    () =>
+      selectedStudents.filter(
+        (student) =>
+          student.walletEligibility === "verified" &&
+          student.credentialStatus === "issued" &&
+          revokeSelectionIds.includes(student.studentNumber),
+      ),
+    [revokeSelectionIds, selectedStudents],
+  );
+
+  const selectableVisibleStudents = filteredStudents.filter(
+    (student) =>
+      student.walletEligibility === "verified" &&
+      student.credentialStatus !== "issued",
+  );
+
   const allVisibleSelected =
-    filteredStudents.length > 0 &&
-    filteredStudents.every((student) =>
+    selectableVisibleStudents.length > 0 &&
+    selectableVisibleStudents.every((student) =>
       selectedIds.includes(student.studentNumber),
     );
 
@@ -165,6 +191,7 @@ function BatchTranscript() {
     setError("");
     setIssuanceStatus("idle");
     setIssuanceSummary(null);
+    setRevokeSelectionIds([]);
   };
 
   const handleGraduationYearChange = (event) => {
@@ -224,13 +251,25 @@ function BatchTranscript() {
         return;
       }
 
-      const eligibilityData = await resolveWalletEligibility(
-        graduatingStudents.map((student) => student.studentNumber),
-      );
+      const [eligibilityData, issuedCredentialData] = await Promise.all([
+        resolveWalletEligibility(
+          graduatingStudents.map((student) => student.studentNumber),
+        ),
+        getIssuedCredentials({
+          page: 1,
+          pageSize: 100,
+        }),
+      ]);
       const eligibilityByStudent = new Map(
         (eligibilityData?.results ?? []).map((result) => [
           result.studentNumber,
           result.status,
+        ]),
+      );
+      const issuedCredentialByStudent = new Map(
+        (issuedCredentialData?.credentials ?? []).map((credential) => [
+          credential.studentNumber,
+          credential,
         ]),
       );
 
@@ -241,6 +280,13 @@ function BatchTranscript() {
             eligibilityByStudent.get(student.studentNumber) ??
             student.walletEligibility ??
             "not_verified",
+          credentialStatus:
+            issuedCredentialByStudent.get(student.studentNumber)?.status ||
+            student.credentialStatus ||
+            "not_issued",
+          credentialId:
+            issuedCredentialByStudent.get(student.studentNumber)
+              ?.credentialId ?? null,
         })),
       );
       setSelectedIds([]);
@@ -249,76 +295,189 @@ function BatchTranscript() {
     } catch (requestError) {
       setStudents([]);
       setSelectedIds([]);
-      setError(requestError.message || "Graduating students could not be loaded.");
+      setError(
+        requestError.message || "Graduating students could not be loaded.",
+      );
       setStatus("error");
     }
   };
 
   const handleStudentToggle = (student) => {
-    if (issuanceStatus === "loading") {
+    if (
+      issuanceStatus === "loading" ||
+      student.walletEligibility !== "verified"
+    ) {
       return;
     }
 
-    setSelectedIds((current) =>
-      current.includes(student.studentNumber)
-        ? current.filter((id) => id !== student.studentNumber)
-        : [...current, student.studentNumber],
-    );
+    if (student.credentialStatus === "issued") {
+      const isSelected = selectedIds.includes(student.studentNumber);
+      setSelectedIds((current) =>
+        isSelected
+          ? current.filter((id) => id !== student.studentNumber)
+          : [...current, student.studentNumber],
+      );
+      setRevokeSelectionIds((current) =>
+        isSelected
+          ? current.filter((id) => id !== student.studentNumber)
+          : [...current, student.studentNumber],
+      );
+    } else {
+      const isSelected = selectedIds.includes(student.studentNumber);
+      setSelectedIds((current) => {
+        if (isSelected) {
+          return current.filter((id) => id !== student.studentNumber);
+        }
+
+        return [...current, student.studentNumber];
+      });
+    }
     setIssuanceSummary(null);
   };
 
-  const handleSelectAllVisible = () => {
-    const visibleStudentIds = filteredStudents.map(
-      (student) => student.studentNumber,
-    );
+  const handleCredentialActionChange = (student, action) => {
+    if (student.walletEligibility !== "verified") {
+      return;
+    }
 
+    if (action === "revoke") {
+      setRevokeSelectionIds((current) =>
+        current.includes(student.studentNumber)
+          ? current
+          : [...current, student.studentNumber],
+      );
+      setSelectedIds((current) =>
+        current.includes(student.studentNumber)
+          ? current
+          : [...current, student.studentNumber],
+      );
+      return;
+    }
+
+    setRevokeSelectionIds((current) =>
+      current.filter((id) => id !== student.studentNumber),
+    );
+    setSelectedIds((current) =>
+      current.filter((id) => id !== student.studentNumber),
+    );
+  };
+
+  const handleSelectAllVisible = () => {
     setSelectedIds((current) => [
-      ...new Set([...current, ...visibleStudentIds]),
+      ...new Set([
+        ...current,
+        ...filteredStudents
+          .filter(
+            (student) =>
+              student.walletEligibility === "verified" &&
+              student.credentialStatus !== "issued",
+          )
+          .map((student) => student.studentNumber),
+      ]),
     ]);
     setIssuanceSummary(null);
   };
 
-  const handleCreateBatchVcs = async () => {
-    if (selectedStudents.length === 0 || issuanceStatus === "loading") {
+  const handleBatchAction = async () => {
+    if (
+      (selectedCreateStudents.length === 0 &&
+        selectedRevokeStudents.length === 0) ||
+      issuanceStatus === "loading"
+    ) {
       return;
     }
 
     setIssuanceStatus("loading");
     setIssuanceSummary(null);
 
-    const results = await Promise.all(
-      selectedStudents.map(async (student) => {
+    const createResults = await Promise.all(
+      selectedCreateStudents.map(async (student) => {
         try {
-          await createAcademicTranscriptVc(student.studentNumber);
-          return { student, success: true };
+          const credential = await createAcademicTranscriptVc(
+            student.studentNumber,
+          );
+          return { student, credential, success: true, kind: "create" };
         } catch (requestError) {
           return {
             student,
             success: false,
+            kind: "create",
             message: requestError.message || "The VC could not be created.",
           };
         }
       }),
     );
 
+    const revokeResults = await Promise.all(
+      selectedRevokeStudents.map(async (student) => {
+        try {
+          await revokeCredential(student.credentialId);
+          return { student, success: true, kind: "revoke" };
+        } catch (requestError) {
+          return {
+            student,
+            success: false,
+            kind: "revoke",
+            message:
+              requestError.message || "The credential could not be revoked.",
+          };
+        }
+      }),
+    );
+
+    const results = [...createResults, ...revokeResults];
     const failures = results.filter((result) => !result.success);
+    const createdCount = createResults.filter(
+      (result) => result.success,
+    ).length;
+    const revokedCount = revokeResults.filter(
+      (result) => result.success,
+    ).length;
 
     setIssuanceSummary({
-      created: results.length - failures.length,
+      created: createdCount,
+      revoked: revokedCount,
       failures,
     });
+    setStudents((current) =>
+      current.map((currentStudent) => {
+        const created = createResults.find(
+          (result) =>
+            result.student.studentNumber === currentStudent.studentNumber &&
+            result.success,
+        );
+        const revoked = revokeResults.some(
+          (result) =>
+            result.student.studentNumber === currentStudent.studentNumber &&
+            result.success,
+        );
+
+        if (created) {
+          return {
+            ...currentStudent,
+            credentialStatus: created.credential.status || "pending",
+            credentialId: created.credential.credentialId ?? null,
+          };
+        }
+
+        return revoked
+          ? {
+              ...currentStudent,
+              credentialStatus: "revoked",
+              credentialId: null,
+            }
+          : currentStudent;
+      }),
+    );
+    setSelectedIds([]);
+    setRevokeSelectionIds([]);
     setIssuanceStatus(failures.length > 0 ? "partial" : "success");
 
-    const createdCount = results.length - failures.length;
-
-    if (createdCount > 0) {
+    if (createdCount > 0 || revokedCount > 0) {
       addNotification({
         type: "batch-completed",
-        title: "Batch VC creation completed",
-        message:
-          failures.length > 0
-            ? `${createdCount} VCs were created and ${failures.length} could not be created.`
-            : `${createdCount} transcript VCs were created successfully.`,
+        title: "Batch credential actions completed",
+        message: `${createdCount} VC${createdCount === 1 ? "" : "s"} created and ${revokedCount} revoked.`,
         actionPage: "issue-transcript",
       });
     }
@@ -326,7 +485,6 @@ function BatchTranscript() {
 
   return (
     <div className="batch-page">
-
       <section className="batch-sample-notice" role="note">
         <strong>Issuer database connected</strong>
         <span>
@@ -357,7 +515,9 @@ function BatchTranscript() {
               {Array.from({ length: 10 }, (_, i) => {
                 const year = new Date().getFullYear() + 2 - i;
                 return (
-                  <option key={year} value={year}>{year}</option>
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
                 );
               })}
             </select>
@@ -398,10 +558,7 @@ function BatchTranscript() {
                       : "Select Program"}
               </option>
               {programOptions.map((program) => (
-                <option
-                  key={program.programCode}
-                  value={program.programCode}
-                >
+                <option key={program.programCode} value={program.programCode}>
                   {formatProgram(program)}
                 </option>
               ))}
@@ -421,11 +578,13 @@ function BatchTranscript() {
             Find Students
           </button>
         </form>
-
       </section>
 
       {status === "loading" && (
-        <BatchState title="Loading students…" message="Loading batch results." />
+        <BatchState
+          title="Loading students…"
+          message="Loading batch results."
+        />
       )}
 
       {status === "error" && (
@@ -448,11 +607,7 @@ function BatchTranscript() {
 
       {status === "ready" && (
         <>
-
-
           <section className="batch-card batch-students-card">
-
-
             <div className="batch-table-toolbar">
               <div className="wallet-filter-section">
                 <span className="wallet-filter-label">Wallet eligibility</span>
@@ -496,9 +651,12 @@ function BatchTranscript() {
                   className="batch-clear-button"
                   onClick={() => {
                     setSelectedIds([]);
+                    setRevokeSelectionIds([]);
                     setIssuanceSummary(null);
                   }}
-                  disabled={selectedIds.length === 0 || issuanceStatus === "loading"}
+                  disabled={
+                    selectedIds.length === 0 || issuanceStatus === "loading"
+                  }
                 >
                   Clear Selection
                 </button>
@@ -515,13 +673,16 @@ function BatchTranscript() {
                     <th>Major</th>
                     <th>Class</th>
                     <th>Wallet Eligibility</th>
-                    <th>Preparation</th>
+                    <th>Credential Status</th>
+                    <th>Credential Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredStudents.map((student) => {
                     const verified = student.walletEligibility === "verified";
-                    const selected = selectedIds.includes(student.studentNumber);
+                    const selected = selectedIds.includes(
+                      student.studentNumber,
+                    );
 
                     return (
                       <tr
@@ -533,21 +694,56 @@ function BatchTranscript() {
                             type="checkbox"
                             aria-label={`Select ${student.fullName}`}
                             checked={selected}
-                            disabled={issuanceStatus === "loading"}
+                            disabled={
+                              issuanceStatus === "loading" ||
+                              student.walletEligibility !== "verified" ||
+                              (student.credentialStatus === "issued" &&
+                                !revokeSelectionIds.includes(
+                                  student.studentNumber,
+                                ))
+                            }
                             onChange={() => handleStudentToggle(student)}
                           />
                         </td>
-                        <td className="batch-student-id">{student.studentNumber}</td>
-                        <td><strong>{student.fullName}</strong></td>
+                        <td className="batch-student-id">
+                          {student.studentNumber}
+                        </td>
+                        <td>
+                          <strong>{student.fullName}</strong>
+                        </td>
                         <td>{student.major}</td>
                         <td>{student.graduationClass || "Not recorded"}</td>
-                        <td><WalletStatus status={student.walletEligibility} /></td>
                         <td>
-                          <span
-                            className="batch-result-unavailable"
-                          >
+                          <WalletStatus status={student.credentialStatus} />
+                        </td>
+                        <td>
+                          <span className="batch-result-unavailable">
                             {getPreparationStatus(student)}
                           </span>
+                        </td>
+                        <td>
+                          {student.credentialStatus === "issued" && (
+                            <select
+                              className="batch-credential-action"
+                              value={
+                                revokeSelectionIds.includes(
+                                  student.studentNumber,
+                                )
+                                  ? "revoke"
+                                  : ""
+                              }
+                              disabled={issuanceStatus === "loading"}
+                              onChange={(event) =>
+                                handleCredentialActionChange(
+                                  student,
+                                  event.target.value,
+                                )
+                              }
+                            >
+                              <option value="">Actions</option>
+                              <option value="revoke">Revoke credential</option>
+                            </select>
+                          )}
                         </td>
                       </tr>
                     );
@@ -568,19 +764,30 @@ function BatchTranscript() {
                 <strong>{selectedStudents.length}</strong> student
                 {selectedStudents.length !== 1 ? "s" : ""} selected
               </div>
-              <button
-                type="button"
-                className="batch-issue-button"
-                disabled={
-                  selectedStudents.length === 0 || issuanceStatus === "loading"
-                }
-                onClick={handleCreateBatchVcs}
-              >
-                <Send size={17} />
-                {issuanceStatus === "loading"
-                  ? "Creating VCs…"
-                  : `Create VCs for ${selectedStudents.length} selected`}
-              </button>
+              <div className="batch-action-buttons">
+                {(selectedCreateStudents.length > 0 ||
+                  selectedRevokeStudents.length > 0) && (
+                  <button
+                    type="button"
+                    className={
+                      selectedRevokeStudents.length > 0
+                        ? "batch-revoke-button"
+                        : "batch-issue-button"
+                    }
+                    disabled={issuanceStatus === "loading"}
+                    onClick={handleBatchAction}
+                  >
+                    {selectedRevokeStudents.length > 0 &&
+                      `Revoke ${selectedRevokeStudents.length} VC${selectedRevokeStudents.length === 1 ? "" : "s"}`}
+                    {selectedRevokeStudents.length > 0 &&
+                      selectedCreateStudents.length > 0 &&
+                      " and "}
+                    {selectedCreateStudents.length > 0 &&
+                      `Create VC${selectedCreateStudents.length === 1 ? "" : "s"} for ${selectedCreateStudents.length} selected`}
+                    {issuanceStatus === "loading" && "…"}
+                  </button>
+                )}
+              </div>
             </div>
 
             {issuanceSummary && (
@@ -596,9 +803,16 @@ function BatchTranscript() {
                   {issuanceSummary.created} VC
                   {issuanceSummary.created === 1 ? "" : "s"} created.
                 </strong>
+                {issuanceSummary.revoked > 0 && (
+                  <span>
+                    {issuanceSummary.revoked} VC
+                    {issuanceSummary.revoked === 1 ? "" : "s"} revoked.
+                  </span>
+                )}
                 {issuanceSummary.failures.length > 0 && (
                   <span>
-                    {issuanceSummary.failures.length} failed: {issuanceSummary.failures
+                    {issuanceSummary.failures.length} failed:{" "}
+                    {issuanceSummary.failures
                       .map((failure) => failure.student.studentNumber)
                       .join(", ")}
                   </span>
@@ -632,6 +846,14 @@ function buildFacultyOptions(students) {
 }
 
 function getPreparationStatus(student) {
+  if (student.credentialStatus === "issued") {
+    return "Already issued";
+  }
+
+  if (student.credentialStatus === "revoked") {
+    return "Credential revoked";
+  }
+
   const candidateStatusKnown =
     typeof student.requirementsFulfilled === "boolean" &&
     Boolean(student.graduationStatus);
@@ -648,7 +870,9 @@ function getPreparationStatus(student) {
     return "Candidate criteria met";
   }
 
-  return candidateStatusKnown ? "Academic review required" : "Open review required";
+  return candidateStatusKnown
+    ? "Academic review required"
+    : "Open review required";
 }
 
 function formatProgram(student) {
@@ -704,6 +928,22 @@ function WalletFilterButton({ label, count, active, onClick }) {
 }
 
 function WalletStatus({ status }) {
+  if (status === "issued") {
+    return (
+      <span className="wallet-status wallet-status-issued">
+        <CheckCircle2 size={13} /> Issued
+      </span>
+    );
+  }
+
+  if (status === "revoked") {
+    return (
+      <span className="wallet-status wallet-status-revoked">
+        <XCircle size={13} /> Revoked
+      </span>
+    );
+  }
+
   return status === "verified" ? (
     <span className="wallet-status wallet-status-connected">
       <CheckCircle2 size={13} /> Verified

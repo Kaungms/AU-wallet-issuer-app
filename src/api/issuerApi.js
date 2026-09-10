@@ -199,6 +199,23 @@ export async function createAcademicTranscriptVc(
   return requireObject(envelope.data, "academic transcript VC data");
 }
 
+export async function revokeCredential(
+  credentialId,
+  { signal, apiBaseUrl } = {},
+) {
+  const encodedCredentialId = encodePathSegment(credentialId, "credentialId");
+  const envelope = await issuerRequest(
+    `/issuer/credentials/${encodedCredentialId}/revoke`,
+    {
+      method: "POST",
+      signal,
+      apiBaseUrl,
+    },
+  );
+
+  return requireObject(envelope.data, "revoked credential data");
+}
+
 export async function getGraduatingStudents({
   graduationYear,
   graduationDate,
