@@ -58,14 +58,18 @@ The response schemas and database field mappings are documented in
 5. Deploy. Sign in, open the dashboard and student list, then reload a bookmarked
    `/#/issued-credentials` route to verify the deployed app and backend together.
 
-Vercel builds reject missing, HTTP, and common local/private API addresses.
+Vercel builds accept HTTP and HTTPS API URLs, and reject missing, invalid,
+and common local/private API addresses. HTTP is accepted for building, but
+browsers block direct HTTP API requests from an HTTPS Vercel page as mixed
+content. For working login and API calls, use an HTTPS backend or an HTTPS
+reverse proxy in front of the HTTP backend.
 The Vercel SPA rewrite serves the app for navigation requests; it does not proxy
 or host the NestJS backend. A successful frontend build does not verify backend
 reachability or authentication.
 
 Troubleshooting:
 
-- A failed build mentioning `VITE_API_BASE_URL`: set a public HTTPS backend URL
+- A failed build mentioning `VITE_API_BASE_URL`: set a public HTTP or HTTPS backend URL
   in the matching Vercel environment and redeploy.
 - Browser network/CORS errors: check the backend HTTPS certificate, reachability,
   and allowed frontend origin. Localhost points to the visitor's own computer.

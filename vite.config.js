@@ -11,14 +11,14 @@ export default defineConfig(({ mode, command }) => {
     try {
       url = new URL(value)
     } catch {
-      throw new Error('Set VITE_API_BASE_URL to your public HTTPS backend URL in Vercel Environment Variables before deploying.')
+      throw new Error('Set VITE_API_BASE_URL to your public HTTP or HTTPS backend URL in Vercel Environment Variables before deploying.')
     }
     const host = url.hostname
     const localHost = host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local') ||
       host === '[::1]' || host === '0.0.0.0' || /^127\./.test(host) || /^10\./.test(host) ||
       /^192\.168\./.test(host) || /^172\.(1[6-9]|2\d|3[01])\./.test(host)
-    if (url.protocol !== 'https:' || localHost || url.username || url.password || url.search || url.hash) {
-      throw new Error('VITE_API_BASE_URL must be a public HTTPS backend URL without credentials, query parameters, or a fragment.')
+    if (!['http:', 'https:'].includes(url.protocol) || localHost || url.username || url.password || url.search || url.hash) {
+      throw new Error('VITE_API_BASE_URL must be a public HTTP or HTTPS backend URL without credentials, query parameters, or a fragment.')
     }
   }
   return { plugins: [react()] }
