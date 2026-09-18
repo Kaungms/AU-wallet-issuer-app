@@ -2,9 +2,8 @@ import { useState } from "react";
 import { Eye, EyeOff, GraduationCap, LockKeyhole, Mail } from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
+import { API_BASE_URL } from "../../api/apiConfig";
 import "./login.css";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 function Login() {
   const { completeLogin } = useAuth();
@@ -29,6 +28,9 @@ function Login() {
     setErrorMessage("");
 
     try {
+      if (!API_BASE_URL) {
+        throw new Error("The sign-in service is not configured. Contact your administrator.");
+      }
       const response = await fetch(`${API_BASE_URL}/auth/issuer/login`, {
         method: "POST",
         headers: {
@@ -50,6 +52,9 @@ function Login() {
 
       const loginData = data.data ?? data;
       const accessToken = loginData.accessToken;
+      if (typeof accessToken !== "string" || !accessToken.trim()) {
+        throw new Error("The sign-in service returned an invalid response. Please try again.");
+      }
       const user = loginData.user ?? {
         email: normalizedEmail,
       };
