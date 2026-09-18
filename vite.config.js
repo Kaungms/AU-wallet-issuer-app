@@ -21,5 +21,10 @@ export default defineConfig(({ mode, command }) => {
       throw new Error('VITE_API_BASE_URL must be a public HTTP or HTTPS backend URL without credentials, query parameters, or a fragment.')
     }
   }
-  return { plugins: [react()] }
+  return {
+    plugins: [react()],
+    define: {
+      'import.meta.env.VITE_USE_API_PROXY': JSON.stringify(process.env.VERCEL === '1' ? 'true' : 'false'),
+    },
+  }
 })
