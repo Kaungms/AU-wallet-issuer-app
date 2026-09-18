@@ -81,14 +81,6 @@ function IssuedCredentials() {
   return (
     <div className="issued-page">
       <header className="issued-summary">
-        <div>
-          <p className="issued-eyebrow">Registrar record</p>
-          <h1>Issued Credentials</h1>
-          <p>
-            Academic transcript credentials awaiting or completed by wallet
-            holders.
-          </p>
-        </div>
         <div className="issued-total">
           <div className="issued-total-icon">
             <FileText size={20} />
