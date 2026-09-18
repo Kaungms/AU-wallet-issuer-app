@@ -1,8 +1,5 @@
-const configuredApiBaseUrl = (import.meta.env?.VITE_API_BASE_URL ?? "")
-  .trim()
-  .replace(/\/+$/, "");
-
-// Vercel builds use a same-origin server-side proxy, including for HTTP backends.
-export const API_BASE_URL = import.meta.env?.VITE_USE_API_PROXY === "true"
+// Every production build uses the same-origin proxy, independent of Vercel
+// system environment variables. Local Vite development calls the API directly.
+export const API_BASE_URL = import.meta.env?.PROD
   ? "/api/backend"
-  : configuredApiBaseUrl;
+  : (import.meta.env?.VITE_API_BASE_URL ?? "").trim().replace(/\/+$/, "");

@@ -58,7 +58,9 @@ The response schemas and database field mappings are documented in
 5. Deploy. Sign in, open the dashboard and student list, then reload a bookmarked
    `/#/issued-credentials` route to verify the deployed app and backend together.
 
-Vercel builds use `/api/backend` automatically. The Node function in
+All production builds use `/api/backend` automatically, without depending on
+the `VERCEL` system environment variable. Plain `vite preview` serves only static
+files; use a Vercel deployment to exercise the server-side proxy. The Node function in
 `api/proxy.js` reads `VITE_API_BASE_URL` at runtime, forwards login bodies and
 Bearer authorization, and preserves backend response status codes. API routing
 runs before the SPA fallback. Keep this variable enabled in each deployment
@@ -74,7 +76,9 @@ Troubleshooting:
 - API 502/504: check the AWS public address, backend port, security group, firewall,
   and NestJS service availability. Private AWS IPs are not publicly reachable.
 - API 401/403: check the registrar session and backend authorization.
-- Requests still go directly to an HTTP IP: deploy the latest code and reload.
+- Requests still go directly to an HTTP IP: deploy the latest commit to Production,
+  confirm the domain points to that deployment, and hard-refresh. An old browser
+  tab can keep the previous JavaScript bundle until it reloads.
 
 Configuration follows [Vercel’s Vite deployment documentation](https://vercel.com/docs/frameworks/frontend/vite).
 

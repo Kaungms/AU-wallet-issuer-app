@@ -23,8 +23,5 @@ export default defineConfig(({ mode, command }) => {
   }
   return {
     plugins: [react()],
-    define: {
-      'import.meta.env.VITE_USE_API_PROXY': JSON.stringify(process.env.VERCEL === '1' ? 'true' : 'false'),
-    },
   }
 })
