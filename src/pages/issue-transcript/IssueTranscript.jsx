@@ -6,6 +6,7 @@ import {
   getIssuedCredentials,
   getStudentAcademicPreview,
   getStudentAcademicReview,
+  reissueCredential,
   revokeCredential,
 } from "../../api/issuerApi";
 import { useNotifications } from "../../context/NotificationContext";
@@ -346,6 +347,35 @@ function StudentAcademicReview({ student }) {
     }
   };
 
+  const handleReissueCredential = async () => {
+    if (!credentialId || issuanceStatus === "reissuing") return;
+
+    setIssuanceStatus("reissuing");
+    setIssuanceError("");
+    setIssuanceResult(null);
+
+    try {
+      const offer = await reissueCredential(credentialId);
+      setIssuanceResult(offer);
+      setIssuanceStatus("reissued");
+      setCredentialAction("");
+      addNotification({
+        type: "vc-created",
+        title: "Transcript reissue offer created",
+        message: `A new transcript offer is ready for ${student.fullName} (${student.studentNumber}) to accept.`,
+        actionPage: "issue-transcript",
+        studentNumber: student.studentNumber,
+      });
+    } catch (requestError) {
+      if (requestError.name !== "AbortError") {
+        setIssuanceStatus("error");
+        setIssuanceError(
+          requestError.message || "The transcript could not be reissued.",
+        );
+      }
+    }
+  };
+
   const credentialIsIssued = credentialStatus === "issued";
   const credentialIsRevoked = credentialStatus === "revoked";
   const credentialExists = Boolean(credentialId);
@@ -534,7 +564,7 @@ function StudentAcademicReview({ student }) {
             </h2>
             <p>
               {credentialIsIssued
-                ? "This student already has an issued transcript credential. Use the action menu to revoke it."
+                ? "This student already has an issued transcript credential. Choose an action below."
                 : credentialIsPending
                   ? "This transcript VC is waiting for the student to claim it. No new VC can be created until this credential is claimed."
                   : walletVerified
@@ -545,27 +575,55 @@ function StudentAcademicReview({ student }) {
         </div>
 
         {credentialIsIssued ? (
-          <div className="issue-credential-actions">
-            <select
-              className="issue-credential-action"
-              value={credentialAction}
-              disabled={issuanceStatus === "revoking"}
-              onChange={(event) => setCredentialAction(event.target.value)}
-            >
-              <option value="">Actions</option>
-              <option value="revoke">Revoke credential</option>
-            </select>
-            <button
-              className="issue-credential-revoke-button"
-              type="button"
-              disabled={
-                credentialAction !== "revoke" || issuanceStatus === "revoking"
-              }
-              onClick={handleRevokeCredential}
-            >
-              {issuanceStatus === "revoking" ? "Revoking…" : "Revoke VC"}
-            </button>
-          </div>
+          <>
+            <div className="issue-credential-actions">
+              <select
+                className="issue-credential-action"
+                value={credentialAction}
+                disabled={
+                  issuanceStatus === "revoking" ||
+                  issuanceStatus === "reissuing"
+                }
+                onChange={(event) => setCredentialAction(event.target.value)}
+              >
+                <option value="">Actions</option>
+                <option value="revoke">Revoke credential</option>
+                <option value="reissue">Reissue credential</option>
+              </select>
+              <button
+                className={`issue-credential-revoke-button ${
+                  credentialAction === "reissue"
+                    ? "issue-credential-reissue-button"
+                    : ""
+                }`}
+                type="button"
+                disabled={
+                  !credentialAction ||
+                  issuanceStatus === "revoking" ||
+                  issuanceStatus === "reissuing"
+                }
+                onClick={
+                  credentialAction === "reissue"
+                    ? handleReissueCredential
+                    : handleRevokeCredential
+                }
+              >
+                {credentialAction === "reissue"
+                  ? issuanceStatus === "reissuing"
+                    ? "Reissuing…"
+                    : "Reissue VC"
+                  : issuanceStatus === "revoking"
+                    ? "Revoking…"
+                    : "Revoke VC"}
+              </button>
+            </div>
+            {credentialAction === "reissue" && (
+              <p className="issuance-action-note" role="status">
+                A new offer will appear in the holder wallet for acceptance.
+                The previously issued VC remains valid.
+              </p>
+            )}
+          </>
         ) : credentialIsPending ? (
           <div className="issuance-unverified-message" role="status">
             Pending student claim
@@ -585,21 +643,27 @@ function StudentAcademicReview({ student }) {
           </div>
         )}
 
-        {(issuanceStatus === "success" || issuanceStatus === "revoked") && (
+        {(issuanceStatus === "success" ||
+          issuanceStatus === "revoked" ||
+          issuanceStatus === "reissued") && (
           <div className="issuance-success-message" role="status">
             <div className="success-checkmark">✓</div>
             <div>
               <h2>
                 {issuanceStatus === "revoked"
                   ? `VC revoked for ${student.fullName}`
-                  : `VC created for ${student.fullName}`}
+                  : issuanceStatus === "reissued"
+                    ? `Reissue offer ready for ${student.fullName}`
+                    : `VC created for ${student.fullName}`}
               </h2>
               <p>
                 {issuanceStatus === "revoked"
                   ? `The credential for student ${student.studentNumber} is no longer available. You can create a new VC.`
-                  : `Student ${student.studentNumber} was sent to the backend VC route.`}
-                {issuanceResult?.credentialId
-                  ? ` Credential ID: ${issuanceResult.credentialId}.`
+                  : issuanceStatus === "reissued"
+                    ? `Student ${student.studentNumber} can accept the new offer in the holder wallet. The previous VC remains valid.`
+                    : `Student ${student.studentNumber} was sent to the backend VC route.`}
+                {issuanceResult?.credentialId || issuanceResult?.offerId
+                  ? ` ${issuanceResult?.offerId ? "Offer" : "Credential"} ID: ${issuanceResult.offerId ?? issuanceResult.credentialId}.`
                   : ""}
               </p>
             </div>

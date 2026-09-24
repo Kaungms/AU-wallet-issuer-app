@@ -10,6 +10,7 @@ import {
   getIssuerStudents,
   getStudentAcademicPreview,
   getStudentAcademicReview,
+  reissueCredential,
   revokeCredential,
   resolveWalletEligibility,
 } from "./issuerApi.js";
@@ -256,6 +257,29 @@ test("revokes an issued credential by credential ID", async () => {
   assert.equal(
     request.url,
     "http://backend.test:3000/issuer/credentials/vc_123/revoke",
+  );
+  assert.equal(request.options.method, "POST");
+});
+
+test("creates a reissue offer for an issued credential", async () => {
+  let request;
+  globalThis.fetch = async (url, options) => {
+    request = { url, options };
+    return jsonResponse({
+      data: { offerId: "offer-456", status: "pending" },
+      message: "Reissue offer created.",
+      meta: {},
+    });
+  };
+
+  const result = await reissueCredential("credential-123", {
+    apiBaseUrl: API_BASE_URL,
+  });
+
+  assert.deepEqual(result, { offerId: "offer-456", status: "pending" });
+  assert.equal(
+    request.url,
+    "http://backend.test:3000/issuer/credentials/credential-123/reissue",
   );
   assert.equal(request.options.method, "POST");
 });
