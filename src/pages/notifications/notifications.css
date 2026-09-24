@@ -492,4 +492,143 @@
   .notification-error-details {
     max-width: 100%;
   }
+  /* =====================================
+   SELECTION
+===================================== */
+
+  .notification-select-checkbox {
+    align-self: center;
+    width: 15px;
+    height: 15px;
+    margin-right: 2px;
+    accent-color: #cc1919;
+    cursor: pointer;
+  }
+
+  .notification-item-selectable {
+    padding-left: 18px;
+  }
+
+  .notification-item-selected {
+    background: #fff1f1;
+  }
+
+  .notification-item-selected:hover {
+    background: #ffe9e9;
+  }
+
+  .notifications-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .notifications-select-all {
+    min-height: 34px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 0 12px;
+
+    color: #443b38;
+    background: #ffffff;
+
+    border: 1px solid #ded5d1;
+    border-radius: 8px;
+
+    font: inherit;
+    font-size: 10px;
+    font-weight: 600;
+
+    cursor: pointer;
+  }
+
+  .notifications-select-all:hover:not(:disabled) {
+    background: #f8f4f2;
+  }
+
+  .notifications-select-all:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .notifications-selected-count {
+    color: #665c58;
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+    padding: 0 2px;
+  }
+
+  .notifications-delete-selected {
+    min-height: 34px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 0 12px;
+
+    color: #ffffff;
+    background: #cc1919;
+
+    border: 1px solid #cc1919;
+    border-radius: 8px;
+
+    font: inherit;
+    font-size: 10px;
+    font-weight: 600;
+
+    cursor: pointer;
+  }
+
+  .notifications-delete-selected:hover:not(:disabled) {
+    background: #b31515;
+  }
+
+  .notifications-delete-selected:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    background: #e5a5a5;
+    border-color: #e5a5a5;
+  }
+
+  .notifications-cancel-select {
+    min-height: 34px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 0 12px;
+
+    color: #665c58;
+    background: #ffffff;
+
+    border: 1px solid #ded5d1;
+    border-radius: 8px;
+
+    font: inherit;
+    font-size: 10px;
+    font-weight: 600;
+
+    cursor: pointer;
+  }
+
+  .notifications-cancel-select:hover {
+    background: #f8f4f2;
+  }
+  @media (max-width: 700px) {
+    .notifications-toolbar-actions {
+      flex-wrap: wrap;
+      width: 100%;
+    }
+
+    .notifications-selected-count {
+      width: 100%;
+      order: -1;
+    }
+  }
 }
