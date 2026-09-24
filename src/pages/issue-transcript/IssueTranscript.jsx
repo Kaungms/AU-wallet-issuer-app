@@ -4,6 +4,7 @@ import { CheckCircle2, FileClock, Search, Wallet, XCircle } from "lucide-react";
 import {
   createAcademicTranscriptVc,
   getIssuedCredentials,
+  getHolderEmail,
   getStudentAcademicPreview,
   getStudentAcademicReview,
   reissueCredential,
@@ -235,15 +236,17 @@ function SingleTranscript({ initialStudentId, onStudentChange }) {
 }
 
 async function fetchStudentReview(studentNumber, signal) {
-  const [review, preview, credentialPage] = await Promise.all([
+  const [review, preview, holderEmail, credentialPage] = await Promise.all([
     getStudentAcademicReview(studentNumber, { signal }),
     getStudentAcademicPreview(studentNumber, { signal }),
+    getHolderEmail(studentNumber, { signal }),
     getIssuedCredentials({ q: studentNumber, signal }),
   ]);
   const credential = credentialPage.credentials[0] ?? null;
 
   return {
     ...review,
+    holderEmail,
     walletEligibility: review.walletEligibility ?? "not_verified",
     cumulativeGpa: review.cumulativeGpa ?? preview.cumulativeGpa ?? null,
     totalEarnedCredits:

@@ -183,6 +183,27 @@ export async function getStudentAcademicPreview(
   return envelope.data;
 }
 
+export async function getHolderEmail(
+  studentNumber,
+  { signal, apiBaseUrl } = {},
+) {
+  const encodedStudentNumber = encodePathSegment(
+    studentNumber,
+    "studentNumber",
+  );
+  const envelope = await issuerRequest(
+    `/issuer/students/${encodedStudentNumber}/holder-email`,
+    { signal, apiBaseUrl },
+  );
+  const data = requireObject(envelope.data, "holder email data");
+
+  if (data.email !== null && typeof data.email !== "string") {
+    throw invalidResponse("Holder email data has an invalid format.");
+  }
+
+  return data.email;
+}
+
 export async function createAcademicTranscriptVc(
   studentNumber,
   { signal, apiBaseUrl } = {},
