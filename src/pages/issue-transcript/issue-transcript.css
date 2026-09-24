@@ -186,6 +186,37 @@
   border-radius: 13px;
 }
 
+.holder-email-field {
+  display: grid;
+  gap: 6px;
+  padding: 16px 22px 20px;
+  border-top: 1px solid #eee7e3;
+}
+
+.holder-email-field label {
+  color: #514743;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.holder-email-field input {
+  width: 100%;
+  max-width: 420px;
+  padding: 10px 11px;
+  color: #2b2522;
+  background: #fff;
+  border: 1px solid #d9cfca;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 12px;
+}
+
+.holder-email-field p {
+  margin: 0;
+  color: #817672;
+  font-size: 10px;
+}
+
 .card-heading {
   display: flex;
   align-items: flex-start;

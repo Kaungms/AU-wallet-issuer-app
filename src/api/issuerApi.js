@@ -233,6 +233,53 @@ export async function reissueCredential(
   return requireObject(envelope.data, "reissue offer data");
 }
 
+export async function sendHolderEmail(
+  { email, event, fullName, studentNumber, credentialId },
+  { signal, emailApiUrl } = {},
+) {
+  const recipient = requireNonEmptyString(email, "email");
+  const normalizedEvent = requireNonEmptyString(event, "event");
+  const endpoint =
+    emailApiUrl || import.meta.env?.VITE_EMAIL_API_URL || "/api/holder-email";
+
+  let response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        to: recipient,
+        event: normalizedEvent,
+        fullName,
+        studentNumber,
+        credentialId,
+      }),
+      signal,
+    });
+  } catch (error) {
+    if (error.name === "AbortError") throw error;
+    throw new IssuerApiError("The holder email could not be sent.", {
+      code: "EMAIL_NETWORK_ERROR",
+    });
+  }
+
+  const responseBody = await parseJsonResponse(response);
+  if (!response.ok) {
+    throw new IssuerApiError(
+      responseBody?.message || "The holder email could not be sent.",
+      {
+        code: responseBody?.code || "EMAIL_SEND_FAILED",
+        status: response.status,
+      },
+    );
+  }
+
+  return requireObject(responseBody, "holder email response");
+}
+
 export async function getGraduatingStudents({
   graduationYear,
   graduationDate,
@@ -472,8 +519,10 @@ function buildApiUrl(apiBaseUrl, path, query = {}) {
   let url;
 
   try {
-    url = new URL(`${baseUrl}/${path.replace(/^\/+/, "")}`,
-      typeof window !== "undefined" ? window.location.origin : undefined);
+    url = new URL(
+      `${baseUrl}/${path.replace(/^\/+/, "")}`,
+      typeof window !== "undefined" ? window.location.origin : undefined,
+    );
   } catch {
     throw invalidRequest(
       "VITE_API_BASE_URL must be a valid absolute URL.",

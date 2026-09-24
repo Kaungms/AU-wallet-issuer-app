@@ -8,6 +8,7 @@ import {
   getStudentAcademicReview,
   reissueCredential,
   revokeCredential,
+  sendHolderEmail,
 } from "../../api/issuerApi";
 import { useNotifications } from "../../context/NotificationContext";
 import BatchTranscript from "../batch-transcript/BatchTranscript";
@@ -269,6 +270,9 @@ function StudentAcademicReview({ student }) {
   );
   const [credentialId, setCredentialId] = useState(student.credentialId);
   const [credentialAction, setCredentialAction] = useState("");
+  const [holderEmail, setHolderEmail] = useState(
+    student.email || student.holderEmail || student.contactEmail || "",
+  );
 
   const handleCreateVc = async () => {
     setIssuanceStatus("loading");
@@ -283,6 +287,13 @@ function StudentAcademicReview({ student }) {
       setCredentialStatus(createdCredential.status || "pending");
       setCredentialId(createdCredential.credentialId ?? null);
       setIssuanceStatus("success");
+      const emailResult = await notifyHolder(
+        student,
+        "created",
+        createdCredential.credentialId,
+        holderEmail,
+      );
+      if (emailResult.error) setIssuanceError(emailResult.error);
       addNotification({
         type: "vc-created",
         title: "Transcript VC created",
@@ -315,6 +326,13 @@ function StudentAcademicReview({ student }) {
       setCredentialStatus("revoked");
       setIssuanceResult(revokedCredential);
       setIssuanceStatus("revoked");
+      const emailResult = await notifyHolder(
+        student,
+        "revoked",
+        credentialId,
+        holderEmail,
+      );
+      if (emailResult.error) setIssuanceError(emailResult.error);
       addNotification({
         type: "system",
         title: "Transcript credential revoked",
@@ -359,6 +377,13 @@ function StudentAcademicReview({ student }) {
       setIssuanceResult(offer);
       setIssuanceStatus("reissued");
       setCredentialAction("");
+      const emailResult = await notifyHolder(
+        student,
+        "reissued",
+        credentialId,
+        holderEmail,
+      );
+      if (emailResult.error) setIssuanceError(emailResult.error);
       addNotification({
         type: "vc-created",
         title: "Transcript reissue offer created",
@@ -456,6 +481,20 @@ function StudentAcademicReview({ student }) {
               value={student.creditSummary?.transferred}
             />
             <InfoRow label="Award" value={student.award} />
+          </div>
+
+          <div className="holder-email-field">
+            <label htmlFor="holder-email">Holder email</label>
+            <input
+              id="holder-email"
+              type="email"
+              value={holderEmail}
+              placeholder="holder@example.com"
+              onChange={(event) => setHolderEmail(event.target.value)}
+            />
+            <p>
+              Email notifications are sent after create, revoke, or reissue.
+            </p>
           </div>
         </section>
 
@@ -619,8 +658,8 @@ function StudentAcademicReview({ student }) {
             </div>
             {credentialAction === "reissue" && (
               <p className="issuance-action-note" role="status">
-                A new offer will appear in the holder wallet for acceptance.
-                The previously issued VC remains valid.
+                A new offer will appear in the holder wallet for acceptance. The
+                previously issued VC remains valid.
               </p>
             )}
           </>
@@ -678,6 +717,29 @@ function StudentAcademicReview({ student }) {
       </section>
     </>
   );
+}
+
+async function notifyHolder(student, event, credentialId, email) {
+  if (!email?.trim()) {
+    return {
+      error: "Credential action completed, but no holder email was provided.",
+    };
+  }
+
+  try {
+    await sendHolderEmail({
+      email: email.trim(),
+      event,
+      fullName: student.fullName,
+      studentNumber: student.studentNumber,
+      credentialId,
+    });
+    return { sent: true };
+  } catch (error) {
+    return {
+      error: `Credential action completed, but holder email failed: ${error.message}`,
+    };
+  }
 }
 
 function ReviewState({ title, message, isError = false }) {

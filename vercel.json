@@ -17,6 +17,9 @@
   "functions": {
     "api/proxy.js": {
       "maxDuration": 60
+    },
+    "api/holder-email.js": {
+      "maxDuration": 30
     }
   }
 }

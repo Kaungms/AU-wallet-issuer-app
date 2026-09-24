@@ -9,6 +9,7 @@ import {
   getIssuedCredentials,
   revokeCredential,
   resolveWalletEligibility,
+  sendHolderEmail,
 } from "../../api/issuerApi";
 import { useNotifications } from "../../context/NotificationContext";
 import "./batch-transcript.css";
@@ -396,6 +397,7 @@ function BatchTranscript() {
           const credential = await createAcademicTranscriptVc(
             student.studentNumber,
           );
+          await notifyHolder(student, "created", credential.credentialId);
           return { student, credential, success: true, kind: "create" };
         } catch (requestError) {
           return {
@@ -412,6 +414,7 @@ function BatchTranscript() {
       selectedRevokeStudents.map(async (student) => {
         try {
           await revokeCredential(student.credentialId);
+          await notifyHolder(student, "revoked", student.credentialId);
           return { student, success: true, kind: "revoke" };
         } catch (requestError) {
           return {
@@ -824,6 +827,26 @@ function BatchTranscript() {
       )}
     </div>
   );
+}
+
+async function notifyHolder(student, event, credentialId) {
+  const email = student.email || student.holderEmail || student.contactEmail;
+  if (!email) return;
+
+  try {
+    await sendHolderEmail({
+      email,
+      event,
+      fullName: student.fullName,
+      studentNumber: student.studentNumber,
+      credentialId,
+    });
+  } catch (error) {
+    console.warn(
+      "Credential action completed, but holder email failed:",
+      error,
+    );
+  }
 }
 
 function buildFacultyOptions(students) {
