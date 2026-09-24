@@ -40,9 +40,12 @@ export default async function handler(req, res) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM_EMAIL;
   // Public base URL where /favicon.svg and /EDTA.png are served from your app's
-  // public/ folder (e.g. "https://au-wallet-issuer.example.com"). Email clients
-  // can't load local file paths, so these images must be reachable over https.
-  const assetBaseUrl = (process.env.APP_PUBLIC_URL || "").replace(/\/+$/, "");
+  // public/ folder. Email clients can't load local file paths, so these images
+  // must be reachable over https. Override with APP_PUBLIC_URL if you ever move
+  // to a different domain (staging, custom domain, etc.).
+  const assetBaseUrl = (
+    process.env.APP_PUBLIC_URL || "https://issuerapp.auwallet.uk"
+  ).replace(/\/+$/, "");
 
   if (!copy || !/^\S+@\S+\.\S+$/.test(to)) {
     return res.status(400).json({
