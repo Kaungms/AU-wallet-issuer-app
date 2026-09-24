@@ -13,7 +13,10 @@ import {
   getIssuerConnectionSummary,
   getStudentAcademicReview,
 } from "../../api/issuerApi";
-import { buildIssuedStudentSeries, getIssuanceEndYear } from "../../api/issuanceAnalytics";
+import {
+  buildIssuedStudentSeries,
+  getIssuanceEndYear,
+} from "../../api/issuanceAnalytics";
 import "./dashboard.css";
 
 function Dashboard({ onPageChange }) {
@@ -24,9 +27,9 @@ function Dashboard({ onPageChange }) {
   const [connectionSummaryStatus, setConnectionSummaryStatus] =
     useState("loading");
 
-  const [issuedCredentialCount, setIssuedCredentialCount] = useState(null);
+  const [issuedStudentCount, setIssuedStudentCount] = useState(null);
 
-  const [issuedCredentialCountStatus, setIssuedCredentialCountStatus] =
+  const [issuedStudentCountStatus, setIssuedStudentCountStatus] =
     useState("loading");
 
   const [graduationBreakdown, setGraduationBreakdown] = useState([]);
@@ -71,25 +74,21 @@ function Dashboard({ onPageChange }) {
       }
     }
 
-    async function loadIssuedCredentialCount() {
+    async function loadIssuedStudentCount() {
       try {
-        const issuedCredentials = await getIssuedCredentials({
-          page: 1,
-          pageSize: 1,
+        const records = await fetchAllIssuedCredentials({
           signal: abortController.signal,
         });
 
-        if (!Number.isInteger(issuedCredentials.meta?.total)) {
-          throw new Error("Issued credential count is unavailable.");
-        }
-
-        setIssuedCredentialCount(issuedCredentials.meta.total);
-        setIssuedCredentialCountStatus("success");
+        setIssuedStudentCount(
+          new Set(records.map((record) => record.studentNumber)).size,
+        );
+        setIssuedStudentCountStatus("success");
       } catch (error) {
         if (error.name !== "AbortError") {
-          console.error("Unable to load issued credential count.", error);
+          console.error("Unable to load issued student count.", error);
 
-          setIssuedCredentialCountStatus("error");
+          setIssuedStudentCountStatus("error");
         }
       }
     }
@@ -115,7 +114,9 @@ function Dashboard({ onPageChange }) {
           );
           students.push(...reviews);
         }
-        setGraduationBreakdown(buildIssuedStudentSeries(records, students, endYear));
+        setGraduationBreakdown(
+          buildIssuedStudentSeries(records, students, endYear),
+        );
         setGraduationBreakdownStatus("success");
       } catch (error) {
         if (error.name !== "AbortError") {
@@ -127,7 +128,7 @@ function Dashboard({ onPageChange }) {
     }
 
     loadConnectionSummary();
-    loadIssuedCredentialCount();
+    loadIssuedStudentCount();
     loadGraduationBreakdown();
 
     return () => abortController.abort();
@@ -140,10 +141,10 @@ function Dashboard({ onPageChange }) {
         ? "Unavailable"
         : "Loading…";
 
-  const issuedCredentialsValue =
-    issuedCredentialCountStatus === "success"
-      ? issuedCredentialCount
-      : issuedCredentialCountStatus === "error"
+  const issuedStudentsValue =
+    issuedStudentCountStatus === "success"
+      ? issuedStudentCount
+      : issuedStudentCountStatus === "error"
         ? "Unavailable"
         : "Loading…";
 
@@ -163,9 +164,9 @@ function Dashboard({ onPageChange }) {
 
         <DashboardStatCard
           icon={FileCheck2}
-          label="Transcripts Issued"
-          value={issuedCredentialsValue}
-          description="View all issued transcript credentials"
+          label="Students Issued"
+          value={issuedStudentsValue}
+          description="Students with issued transcript credentials"
           onClick={() => onPageChange?.("issued-credentials")}
         />
       </section>
@@ -249,7 +250,10 @@ function Dashboard({ onPageChange }) {
 
           {graduationBreakdownStatus === "success" &&
             graduationBreakdown.length > 0 && (
-              <IssuanceByGraduationChart data={graduationBreakdown} endYear={endYear} />
+              <IssuanceByGraduationChart
+                data={graduationBreakdown}
+                endYear={endYear}
+              />
             )}
         </section>
       </div>
