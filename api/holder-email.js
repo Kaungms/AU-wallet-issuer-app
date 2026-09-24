@@ -7,7 +7,8 @@ const EVENT_COPY = {
     message:
       "Your academic transcript credential has been created and is ready for you to claim in your wallet.",
     badge: "New credential",
-    accent: "#4f46e5",
+    accentFrom: "#9c1c1c",
+    accentTo: "#3a0a0a",
   },
   revoked: {
     subject: "Your AU academic transcript credential was revoked",
@@ -15,7 +16,8 @@ const EVENT_COPY = {
     message:
       "Your academic transcript credential is no longer valid. Please contact the issuer if you need assistance.",
     badge: "Revoked",
-    accent: "#dc2626",
+    accentFrom: "#5c1010",
+    accentTo: "#1f0505",
   },
   reissued: {
     subject: "A new AU academic transcript offer is ready",
@@ -23,7 +25,8 @@ const EVENT_COPY = {
     message:
       "A new academic transcript offer is ready for you to accept in your wallet.",
     badge: "Reissued",
-    accent: "#0891b2",
+    accentFrom: "#b3311f",
+    accentTo: "#3a0a0a",
   },
 };
 
@@ -120,7 +123,7 @@ function buildEmailHtml({ copy, detail, assetBaseUrl }) {
 
             <!-- Header -->
             <tr>
-              <td style="background:linear-gradient(135deg, ${copy.accent} 0%, #111827 100%); padding:32px 32px 28px;">
+              <td style="background:linear-gradient(135deg, ${copy.accentFrom} 0%, ${copy.accentTo} 100%); padding:32px 32px 28px;">
                 ${
                   faviconUrl
                     ? `<img src="${faviconUrl}" alt="AU Wallet" width="36" height="36" style="display:block; margin-bottom:16px; border-radius:8px;" />`
