@@ -216,6 +216,23 @@ export async function revokeCredential(
   return requireObject(envelope.data, "revoked credential data");
 }
 
+export async function reissueCredential(
+  credentialId,
+  { signal, apiBaseUrl } = {},
+) {
+  const encodedCredentialId = encodePathSegment(credentialId, "credentialId");
+  const envelope = await issuerRequest(
+    `/issuer/credentials/${encodedCredentialId}/reissue`,
+    {
+      method: "POST",
+      signal,
+      apiBaseUrl,
+    },
+  );
+
+  return requireObject(envelope.data, "reissue offer data");
+}
+
 export async function getGraduatingStudents({
   graduationYear,
   graduationDate,
