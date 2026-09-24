@@ -1,4 +1,4 @@
-const DEFAULT_API_BASE_URL = import.meta.env?.VITE_API_BASE_URL;
+import { API_BASE_URL as DEFAULT_API_BASE_URL } from "./apiConfig.js";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 25;
@@ -472,7 +472,8 @@ function buildApiUrl(apiBaseUrl, path, query = {}) {
   let url;
 
   try {
-    url = new URL(`${baseUrl}/${path.replace(/^\/+/, "")}`);
+    url = new URL(`${baseUrl}/${path.replace(/^\/+/, "")}`,
+      typeof window !== "undefined" ? window.location.origin : undefined);
   } catch {
     throw invalidRequest(
       "VITE_API_BASE_URL must be a valid absolute URL.",
