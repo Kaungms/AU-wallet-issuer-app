@@ -948,9 +948,21 @@
   cursor: not-allowed;
 }
 
+.issue-credential-reissue-button {
+  background: #276d47;
+  border-color: #276d47;
+}
+
 .issue-credential-action:disabled {
   opacity: 0.6;
   cursor: wait;
+}
+
+.issuance-action-note {
+  margin: 10px 0 0;
+  color: #775e55;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 /* ========================================
