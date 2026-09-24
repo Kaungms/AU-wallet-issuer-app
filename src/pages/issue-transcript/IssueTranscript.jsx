@@ -709,7 +709,7 @@ function StudentAcademicReview({ student }) {
           </div>
         )}
 
-        {issuanceStatus === "error" && (
+        {issuanceError && (
           <div className="issuance-error-message" role="alert">
             {issuanceError}
           </div>
