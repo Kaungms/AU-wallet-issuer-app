@@ -222,13 +222,14 @@ export async function createAcademicTranscriptVc(
 
 export async function revokeCredential(
   credentialId,
-  { signal, apiBaseUrl } = {},
+  { reason, signal, apiBaseUrl } = {},
 ) {
   const encodedCredentialId = encodePathSegment(credentialId, "credentialId");
   const envelope = await issuerRequest(
     `/issuer/credentials/${encodedCredentialId}/revoke`,
     {
       method: "POST",
+      body: { reason: requireNonEmptyString(reason, "reason").trim() },
       signal,
       apiBaseUrl,
     },

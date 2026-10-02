@@ -12,6 +12,7 @@ import {
   sendHolderEmail,
 } from "../../api/issuerApi";
 import { useNotifications } from "../../context/NotificationContext";
+import RevocationReasonField from "../../components/RevocationReasonField";
 import BatchTranscript from "../batch-transcript/BatchTranscript";
 import "./issue-transcript.css";
 
@@ -273,6 +274,7 @@ function StudentAcademicReview({ student }) {
   );
   const [credentialId, setCredentialId] = useState(student.credentialId);
   const [credentialAction, setCredentialAction] = useState("");
+  const [revocationReason, setRevocationReason] = useState("");
   const [holderEmail, setHolderEmail] = useState(
     student.email || student.holderEmail || student.contactEmail || "",
   );
@@ -319,12 +321,21 @@ function StudentAcademicReview({ student }) {
       return;
     }
 
+    const reason = revocationReason.trim();
+    if (!reason) {
+      setIssuanceError("Enter a reason for revocation.");
+      return;
+    }
+    if (!window.confirm(
+      `Confirm VC revocation\n\nEducation Transcript VC\nStudent: ${student.fullName} (${student.studentNumber})\nCredential ID: ${credentialId}\n\nReason for revocation:\n${reason}\n\nRevoke this credential?`,
+    )) return;
+
     setIssuanceStatus("revoking");
     setIssuanceError("");
     setIssuanceResult(null);
 
     try {
-      const revokedCredential = await revokeCredential(credentialId);
+      const revokedCredential = await revokeCredential(credentialId, { reason });
 
       setCredentialStatus("revoked");
       setIssuanceResult(revokedCredential);
@@ -581,7 +592,7 @@ function StudentAcademicReview({ student }) {
         </div>
       </section>
 
-      <section className="issue-card issuance-card">
+      <section className={`issue-card issuance-card ${credentialAction === "revoke" ? "issuance-card-revocation" : ""}`}>
         <div className="issuance-content">
           <div
             className={`issuance-icon ${
@@ -618,6 +629,14 @@ function StudentAcademicReview({ student }) {
 
         {credentialIsIssued ? (
           <>
+            {credentialAction === "revoke" && (
+              <RevocationReasonField
+                id="single-revocation-reason"
+                value={revocationReason}
+                onChange={setRevocationReason}
+                disabled={issuanceStatus === "revoking"}
+              />
+            )}
             <div className="issue-credential-actions">
               <select
                 className="issue-credential-action"
@@ -641,6 +660,7 @@ function StudentAcademicReview({ student }) {
                 type="button"
                 disabled={
                   !credentialAction ||
+                  (credentialAction === "revoke" && !revocationReason.trim()) ||
                   issuanceStatus === "revoking" ||
                   issuanceStatus === "reissuing"
                 }
