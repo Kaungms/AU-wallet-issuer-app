@@ -12,6 +12,7 @@ import {
   sendHolderEmail,
 } from "../../api/issuerApi";
 import { useNotifications } from "../../context/NotificationContext";
+import RevocationReasonField from "../../components/RevocationReasonField";
 import "./batch-transcript.css";
 
 function BatchTranscript() {
@@ -33,6 +34,7 @@ function BatchTranscript() {
   const [issuanceStatus, setIssuanceStatus] = useState("idle");
   const [issuanceSummary, setIssuanceSummary] = useState(null);
   const [revokeSelectionIds, setRevokeSelectionIds] = useState([]);
+  const [revocationReason, setRevocationReason] = useState("");
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -193,6 +195,7 @@ function BatchTranscript() {
     setIssuanceStatus("idle");
     setIssuanceSummary(null);
     setRevokeSelectionIds([]);
+    setRevocationReason("");
   };
 
   const handleGraduationYearChange = (event) => {
@@ -388,6 +391,23 @@ function BatchTranscript() {
       return;
     }
 
+    const reason = revocationReason.trim();
+    if (selectedRevokeStudents.length > 0) {
+      if (!reason) {
+        setError("Enter a reason for revocation.");
+        return;
+      }
+      const credentials = selectedRevokeStudents.map((student) =>
+        `${student.fullName} (${student.studentNumber}) · ${student.credentialId}`,
+      ).join("\n");
+      const createNote = selectedCreateStudents.length > 0
+        ? `\n\nThis action will also create ${selectedCreateStudents.length} credential(s).`
+        : "";
+      if (!window.confirm(
+        `Confirm VC revocation\n\nRevoke ${selectedRevokeStudents.length} Education Transcript VC(s):\n${credentials}\n\nReason for revocation:\n${reason}${createNote}\n\nConfirm this action?`,
+      )) return;
+    }
+
     setIssuanceStatus("loading");
     setIssuanceSummary(null);
 
@@ -413,7 +433,7 @@ function BatchTranscript() {
     const revokeResults = await Promise.all(
       selectedRevokeStudents.map(async (student) => {
         try {
-          await revokeCredential(student.credentialId);
+          await revokeCredential(student.credentialId, { reason });
           await notifyHolder(student, "revoked", student.credentialId);
           return { student, success: true, kind: "revoke" };
         } catch (requestError) {
@@ -762,6 +782,17 @@ function BatchTranscript() {
               )}
             </div>
 
+            {selectedRevokeStudents.length > 0 && (
+              <div className="batch-revocation-reason">
+                <RevocationReasonField
+                  id="batch-revocation-reason"
+                  value={revocationReason}
+                  onChange={setRevocationReason}
+                  disabled={issuanceStatus === "loading"}
+                  batch
+                />
+              </div>
+            )}
             <div className="batch-action-footer">
               <div>
                 <strong>{selectedStudents.length}</strong> student
@@ -777,7 +808,7 @@ function BatchTranscript() {
                         ? "batch-revoke-button"
                         : "batch-issue-button"
                     }
-                    disabled={issuanceStatus === "loading"}
+                    disabled={issuanceStatus === "loading" || (selectedRevokeStudents.length > 0 && !revocationReason.trim())}
                     onClick={handleBatchAction}
                   >
                     {selectedRevokeStudents.length > 0 &&

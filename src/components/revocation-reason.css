@@ -1,0 +1,53 @@
+.revocation-reason-field {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  margin: 16px 0;
+}
+
+.revocation-reason-field label {
+  color: #1c1918;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.revocation-reason-field label span { color: #cc1919; }
+
+.revocation-reason-field textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 96px;
+  padding: 12px 14px;
+  color: #1c1918;
+  background: #ffffff;
+  border: 1px solid #eae2de;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.revocation-reason-field textarea:focus {
+  outline: 2px solid #cc1919;
+  outline-offset: 2px;
+}
+
+.revocation-reason-field textarea:disabled { opacity: 0.6; }
+
+.revocation-reason-field p {
+  margin: 0;
+  color: #6b6461;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.batch-revocation-reason { padding: 0 22px; }
+
+.issuance-card.issuance-card-revocation {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+}
+
+.issuance-card-revocation .revocation-reason-field { margin: 0; }

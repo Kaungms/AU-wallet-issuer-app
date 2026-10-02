@@ -12,6 +12,7 @@ import {
   sendHolderEmail,
 } from "../../api/issuerApi";
 import { useNotifications } from "../../context/NotificationContext";
+import RevocationReasonField from "../../components/RevocationReasonField";
 import BatchTranscript from "../batch-transcript/BatchTranscript";
 import "./issue-transcript.css";
 
@@ -236,13 +237,11 @@ function SingleTranscript({ initialStudentId, onStudentChange }) {
 }
 
 async function fetchStudentReview(studentNumber, signal) {
-  const [review, preview, holderEmail, credentialPage] = await Promise.all([
+  const [review, preview, holderEmail] = await Promise.all([
     getStudentAcademicReview(studentNumber, { signal }),
     getStudentAcademicPreview(studentNumber, { signal }),
     getHolderEmail(studentNumber, { signal }),
-    getIssuedCredentials({ q: studentNumber, signal }),
   ]);
-  const credential = credentialPage.credentials[0] ?? null;
 
   return {
     ...review,
@@ -255,10 +254,6 @@ async function fetchStudentReview(studentNumber, signal) {
       review.creditSummary?.transferred ?? preview.transferCredits ?? null,
     terms: preview.terms,
     unassignedResults: preview.unassignedResults ?? [],
-    credentialStatus: credential
-      ? credential.status || "pending"
-      : "not_issued",
-    credentialId: credential?.credentialId ?? null,
   };
 }
 
@@ -272,10 +267,54 @@ function StudentAcademicReview({ student }) {
     student.credentialStatus,
   );
   const [credentialId, setCredentialId] = useState(student.credentialId);
-  const [credentialAction, setCredentialAction] = useState("");
+  const [credentialAction, setCredentialAction] = useState("reissue");
+  const [revocationReason, setRevocationReason] = useState("");
   const [holderEmail, setHolderEmail] = useState(
     student.email || student.holderEmail || student.contactEmail || "",
   );
+  const [credentialLoading, setCredentialLoading] = useState(true);
+  const [credentialLookupError, setCredentialLookupError] = useState("");
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setCredentialLoading(true);
+    setCredentialLookupError("");
+    setCredentialId(null);
+    setCredentialStatus(student.credentialStatus);
+    setCredentialAction("reissue");
+    setIssuanceStatus("idle");
+    setIssuanceResult(null);
+    setIssuanceError("");
+    setRevocationReason("");
+    setHolderEmail(student.email || student.holderEmail || student.contactEmail || "");
+
+    async function loadCredentialSection() {
+      try {
+        const page = await getIssuedCredentials({
+          q: student.studentNumber,
+          includeRevoked: true,
+          signal: controller.signal,
+        });
+        if (controller.signal.aborted) return;
+        const credentials = page.credentials.filter((item) => item.studentNumber === student.studentNumber);
+        const credential = credentials.find((item) => item.status === "issued") ?? credentials[0];
+        if (!credential && !page.revokedHistoryAvailable) {
+          setCredentialLookupError("Update and restart the backend to check previously revoked credentials.");
+          return;
+        }
+        setCredentialStatus(credential?.status ?? "not_issued");
+        setCredentialId(credential?.credentialId ?? null);
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        setCredentialLookupError(error.message || "Credential history could not be loaded.");
+      } finally {
+        if (!controller.signal.aborted) setCredentialLoading(false);
+      }
+    }
+
+    void loadCredentialSection();
+    return () => controller.abort();
+  }, [student]);
 
   const handleCreateVc = async () => {
     setIssuanceStatus("loading");
@@ -319,14 +358,24 @@ function StudentAcademicReview({ student }) {
       return;
     }
 
+    const reason = revocationReason.trim();
+    if (!reason) {
+      setIssuanceError("Enter a reason for revocation.");
+      return;
+    }
+    if (!window.confirm(
+      `Confirm VC revocation\n\nEducation Transcript VC\nStudent: ${student.fullName} (${student.studentNumber})\nCredential ID: ${credentialId}\n\nReason for revocation:\n${reason}\n\nRevoke this credential?`,
+    )) return;
+
     setIssuanceStatus("revoking");
     setIssuanceError("");
     setIssuanceResult(null);
 
     try {
-      const revokedCredential = await revokeCredential(credentialId);
+      const revokedCredential = await revokeCredential(credentialId, { reason });
 
       setCredentialStatus("revoked");
+      setCredentialAction("reissue");
       setIssuanceResult(revokedCredential);
       setIssuanceStatus("revoked");
       const emailResult = await notifyHolder(
@@ -581,7 +630,7 @@ function StudentAcademicReview({ student }) {
         </div>
       </section>
 
-      <section className="issue-card issuance-card">
+      <section className={`issue-card issuance-card ${credentialAction === "revoke" ? "issuance-card-revocation" : ""}`}>
         <div className="issuance-content">
           <div
             className={`issuance-icon ${
@@ -596,8 +645,14 @@ function StudentAcademicReview({ student }) {
           </div>
           <div>
             <h2>
-              {credentialIsIssued
+              {credentialLoading
+                ? "Checking credential history…"
+                : credentialLookupError
+                  ? "Credential history unavailable"
+                : credentialIsIssued
                 ? "Transcript VC already issued"
+                : credentialIsRevoked
+                  ? "Transcript VC revoked · ready to reissue"
                 : credentialIsPending
                   ? "Transcript VC pending wallet claim"
                   : walletVerified
@@ -605,8 +660,14 @@ function StudentAcademicReview({ student }) {
                     : "Wallet verification required"}
             </h2>
             <p>
-              {credentialIsIssued
+              {credentialLoading
+                ? "Loading this student's previous transcript credentials."
+                : credentialLookupError
+                  ? credentialLookupError
+                : credentialIsIssued
                 ? "This student already has an issued transcript credential. Choose an action below."
+                : credentialIsRevoked
+                  ? "This student was previously issued a transcript credential. Reissue it to send a new offer to the holder wallet."
                 : credentialIsPending
                   ? "This transcript VC is waiting for the student to claim it. No new VC can be created until this credential is claimed."
                   : walletVerified
@@ -616,8 +677,20 @@ function StudentAcademicReview({ student }) {
           </div>
         </div>
 
-        {credentialIsIssued ? (
+        {credentialLoading || credentialLookupError ? (
+          <div className="issuance-unverified-message" role="status">
+            {credentialLoading ? "Loading credential history" : "Refresh to retry credential history"}
+          </div>
+        ) : credentialIsIssued || credentialIsRevoked ? (
           <>
+            {credentialAction === "revoke" && (
+              <RevocationReasonField
+                id="single-revocation-reason"
+                value={revocationReason}
+                onChange={setRevocationReason}
+                disabled={issuanceStatus === "revoking"}
+              />
+            )}
             <div className="issue-credential-actions">
               <select
                 className="issue-credential-action"
@@ -629,7 +702,7 @@ function StudentAcademicReview({ student }) {
                 onChange={(event) => setCredentialAction(event.target.value)}
               >
                 <option value="">Actions</option>
-                <option value="revoke">Revoke credential</option>
+                {credentialIsIssued && <option value="revoke">Revoke credential</option>}
                 <option value="reissue">Reissue credential</option>
               </select>
               <button
@@ -641,6 +714,8 @@ function StudentAcademicReview({ student }) {
                 type="button"
                 disabled={
                   !credentialAction ||
+                  !credentialId ||
+                  (credentialAction === "revoke" && !revocationReason.trim()) ||
                   issuanceStatus === "revoking" ||
                   issuanceStatus === "reissuing"
                 }
@@ -662,7 +737,7 @@ function StudentAcademicReview({ student }) {
             {credentialAction === "reissue" && (
               <p className="issuance-action-note" role="status">
                 A new offer will appear in the holder wallet for acceptance. The
-                previously issued VC remains valid.
+                previously issued VC {credentialIsRevoked ? "remains revoked" : "remains valid"}.
               </p>
             )}
           </>
