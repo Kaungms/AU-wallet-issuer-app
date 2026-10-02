@@ -93,6 +93,7 @@ export async function getIssuerStudents({
 
 export async function getIssuedCredentials({
   q = "",
+  includeRevoked = false,
   page = DEFAULT_PAGE,
   pageSize = DEFAULT_PAGE_SIZE,
   signal,
@@ -109,15 +110,22 @@ export async function getIssuedCredentials({
 
   validatePagination(page, pageSize);
 
-  const envelope = await issuerRequest("/issuer/credentials", {
-    signal,
-    apiBaseUrl,
-    query: {
-      q: normalizedQuery || undefined,
-      page,
-      pageSize,
-    },
-  });
+  const query = { q: normalizedQuery || undefined, page, pageSize };
+  let envelope;
+  let revokedHistoryAvailable = true;
+  try {
+    envelope = await issuerRequest("/issuer/credentials", {
+      signal,
+      apiBaseUrl,
+      query: { ...query, includeRevoked: includeRevoked ? "true" : undefined },
+    });
+  } catch (error) {
+    if (!includeRevoked || error.status !== 400) throw error;
+    // Older backend deployments reject the new query field. Their existing
+    // endpoint can still return active credentials, but not revoked history.
+    envelope = await issuerRequest("/issuer/credentials", { signal, apiBaseUrl, query });
+    revokedHistoryAvailable = false;
+  }
 
   if (!Array.isArray(envelope.data?.credentials)) {
     throw invalidResponse("Issued credentials have an invalid format.");
@@ -125,6 +133,7 @@ export async function getIssuedCredentials({
 
   return {
     ...envelope.data,
+    revokedHistoryAvailable,
     meta: envelope.meta,
   };
 }
