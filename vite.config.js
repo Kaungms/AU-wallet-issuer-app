@@ -1,27 +1,94 @@
-import process from 'node:process'
-import { defineConfig, loadEnv } from 'vite'
-import react from '@vitejs/plugin-react'
+import process from "node:process";
+import { Buffer } from "node:buffer";
+import { defineConfig, loadEnv } from "vite";
+import react from "@vitejs/plugin-react";
+import holderEmailHandler from "./api/holder-email.js";
 
 // https://vite.dev/config/
 export default defineConfig(({ mode, command }) => {
-  if (command === 'build' && process.env.VERCEL === '1') {
-    const env = loadEnv(mode, process.cwd(), 'VITE_')
-    const value = (process.env.VITE_API_BASE_URL ?? env.VITE_API_BASE_URL ?? '').trim()
-    let url
+  if (command === "build" && process.env.VERCEL === "1") {
+    const env = loadEnv(mode, process.cwd(), "VITE_");
+    const value = (
+      process.env.VITE_API_BASE_URL ??
+      env.VITE_API_BASE_URL ??
+      ""
+    ).trim();
+    let url;
     try {
-      url = new URL(value)
+      url = new URL(value);
     } catch {
-      throw new Error('Set VITE_API_BASE_URL to your public HTTP or HTTPS backend URL in Vercel Environment Variables before deploying.')
+      throw new Error(
+        "Set VITE_API_BASE_URL to your public HTTP or HTTPS backend URL in Vercel Environment Variables before deploying.",
+      );
     }
-    const host = url.hostname
-    const localHost = host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local') ||
-      host === '[::1]' || host === '0.0.0.0' || /^127\./.test(host) || /^10\./.test(host) ||
-      /^192\.168\./.test(host) || /^172\.(1[6-9]|2\d|3[01])\./.test(host)
-    if (!['http:', 'https:'].includes(url.protocol) || localHost || url.username || url.password || url.search || url.hash) {
-      throw new Error('VITE_API_BASE_URL must be a public HTTP or HTTPS backend URL without credentials, query parameters, or a fragment.')
+    const host = url.hostname;
+    const localHost =
+      host === "localhost" ||
+      host.endsWith(".localhost") ||
+      host.endsWith(".local") ||
+      host === "[::1]" ||
+      host === "0.0.0.0" ||
+      /^127\./.test(host) ||
+      /^10\./.test(host) ||
+      /^192\.168\./.test(host) ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(host);
+    if (
+      !["http:", "https:"].includes(url.protocol) ||
+      localHost ||
+      url.username ||
+      url.password ||
+      url.search ||
+      url.hash
+    ) {
+      throw new Error(
+        "VITE_API_BASE_URL must be a public HTTP or HTTPS backend URL without credentials, query parameters, or a fragment.",
+      );
     }
   }
   return {
-    plugins: [react()],
-  }
-})
+    plugins: [react(), localHolderEmailApi()],
+  };
+});
+
+function localHolderEmailApi() {
+  return {
+    name: "local-holder-email-api",
+    configureServer(server) {
+      server.middlewares.use("/api/holder-email", async (req, res, next) => {
+        if (req.method !== "POST") {
+          next();
+          return;
+        }
+
+        const chunks = [];
+        for await (const chunk of req) chunks.push(chunk);
+
+        let body;
+        try {
+          body = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
+        } catch {
+          res.statusCode = 400;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ message: "Invalid JSON request body." }));
+          return;
+        }
+
+        const response = {
+          status(code) {
+            res.statusCode = code;
+            return response;
+          },
+          setHeader(name, value) {
+            res.setHeader(name, value);
+          },
+          json(value) {
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify(value));
+          },
+        };
+
+        await holderEmailHandler({ method: req.method, body }, response);
+      });
+    },
+  };
+}

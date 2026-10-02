@@ -13,6 +13,7 @@ import {
   reissueCredential,
   revokeCredential,
   resolveWalletEligibility,
+  sendHolderEmail,
 } from "./issuerApi.js";
 
 const API_BASE_URL = "http://backend.test:3000";
@@ -282,6 +283,40 @@ test("creates a reissue offer for an issued credential", async () => {
     "http://backend.test:3000/issuer/credentials/credential-123/reissue",
   );
   assert.equal(request.options.method, "POST");
+});
+
+test("sends a holder email through the notification endpoint", async () => {
+  let request;
+  globalThis.fetch = async (url, options) => {
+    request = { url, options };
+    return jsonResponse({
+      data: { id: "email_123" },
+      message: "Holder email sent.",
+      meta: {},
+    });
+  };
+
+  const result = await sendHolderEmail(
+    {
+      email: "holder@example.com",
+      event: "created",
+      fullName: "A Student",
+      studentNumber: "6499002",
+      credentialId: "vc_123",
+    },
+    { emailApiUrl: "http://email.test/api/holder-email" },
+  );
+
+  assert.deepEqual(result.data, { id: "email_123" });
+  assert.equal(request.url, "http://email.test/api/holder-email");
+  assert.equal(request.options.method, "POST");
+  assert.deepEqual(JSON.parse(request.options.body), {
+    to: "holder@example.com",
+    event: "created",
+    fullName: "A Student",
+    studentNumber: "6499002",
+    credentialId: "vc_123",
+  });
 });
 
 test("sends unique student numbers to wallet eligibility resolution", async () => {

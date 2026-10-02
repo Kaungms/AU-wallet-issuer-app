@@ -5,7 +5,10 @@ import {
   Bell,
   Check,
   CheckCircle2,
+  CheckSquare,
   ShieldCheck,
+  Trash2,
+  X,
 } from "lucide-react";
 
 import { useNotifications } from "../../context/NotificationContext";
@@ -13,12 +16,17 @@ import { useNotifications } from "../../context/NotificationContext";
 import "./notifications.css";
 
 function Notifications({ onPageChange }) {
-  const { visibleNotifications, markAsRead, markAllAsRead } =
-    useNotifications();
+  const {
+    visibleNotifications,
+    markAsRead,
+    markAllAsRead,
+    deleteNotifications,
+  } = useNotifications();
 
   const [activeFilter, setActiveFilter] = useState("all");
-
   const [expandedNotificationId, setExpandedNotificationId] = useState(null);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
 
   const unreadCount = visibleNotifications.filter(
     (notification) => !notification.read,
@@ -32,7 +40,18 @@ function Notifications({ onPageChange }) {
     return visibleNotifications;
   }, [visibleNotifications, activeFilter]);
 
+  const allVisibleSelected =
+    filteredNotifications.length > 0 &&
+    filteredNotifications.every((notification) =>
+      selectedIds.includes(notification.id),
+    );
+
   const handleNotificationClick = (notification) => {
+    if (selectionMode) {
+      handleToggleSelect(notification.id);
+      return;
+    }
+
     if (!notification.read) {
       markAsRead(notification.id);
     }
@@ -65,6 +84,49 @@ function Notifications({ onPageChange }) {
     );
   };
 
+  const handleToggleSelect = (notificationId) => {
+    setSelectedIds((current) =>
+      current.includes(notificationId)
+        ? current.filter((id) => id !== notificationId)
+        : [...current, notificationId],
+    );
+  };
+
+  const handleToggleSelectAll = () => {
+    setSelectedIds((current) => {
+      if (allVisibleSelected) {
+        const visibleIds = new Set(
+          filteredNotifications.map((notification) => notification.id),
+        );
+        return current.filter((id) => !visibleIds.has(id));
+      }
+
+      return [
+        ...new Set([
+          ...current,
+          ...filteredNotifications.map((notification) => notification.id),
+        ]),
+      ];
+    });
+  };
+
+  const handleEnterSelectionMode = () => {
+    setSelectionMode(true);
+  };
+
+  const handleExitSelectionMode = () => {
+    setSelectionMode(false);
+    setSelectedIds([]);
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedIds.length === 0) return;
+
+    deleteNotifications(selectedIds);
+    setSelectedIds([]);
+    setSelectionMode(false);
+  };
+
   return (
     <div className="notifications-page">
       <section className="notifications-card">
@@ -93,15 +155,64 @@ function Notifications({ onPageChange }) {
             </button>
           </div>
 
-          <button
-            type="button"
-            className="notifications-mark-all"
-            onClick={markAllAsRead}
-            disabled={unreadCount === 0}
-          >
-            <Check size={15} />
-            Mark all as read
-          </button>
+          {selectionMode ? (
+            <div className="notifications-toolbar-actions">
+              <button
+                type="button"
+                className="notifications-select-all"
+                onClick={handleToggleSelectAll}
+                disabled={filteredNotifications.length === 0}
+              >
+                <CheckSquare size={14} />
+                {allVisibleSelected ? "Deselect all" : "Select all"}
+              </button>
+
+              <span className="notifications-selected-count">
+                {selectedIds.length} selected
+              </span>
+
+              <button
+                type="button"
+                className="notifications-delete-selected"
+                onClick={handleDeleteSelected}
+                disabled={selectedIds.length === 0}
+              >
+                <Trash2 size={14} />
+                Delete
+              </button>
+
+              <button
+                type="button"
+                className="notifications-cancel-select"
+                onClick={handleExitSelectionMode}
+              >
+                <X size={14} />
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <div className="notifications-toolbar-actions">
+              <button
+                type="button"
+                className="notifications-mark-all"
+                onClick={handleEnterSelectionMode}
+                disabled={visibleNotifications.length === 0}
+              >
+                <Trash2 size={14} />
+                Select
+              </button>
+
+              <button
+                type="button"
+                className="notifications-mark-all"
+                onClick={markAllAsRead}
+                disabled={unreadCount === 0}
+              >
+                <Check size={15} />
+                Mark all as read
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="notifications-list">
@@ -119,11 +230,14 @@ function Notifications({ onPageChange }) {
                 key={notification.id}
                 notification={notification}
                 expanded={expandedNotificationId === notification.id}
+                selectionMode={selectionMode}
+                selected={selectedIds.includes(notification.id)}
                 onClick={() => handleNotificationClick(notification)}
                 onKeyDown={(event) =>
                   handleNotificationKeyDown(event, notification)
                 }
                 onView={(event) => handleViewError(event, notification)}
+                onToggleSelect={() => handleToggleSelect(notification.id)}
               />
             ))
           )}
@@ -136,9 +250,12 @@ function Notifications({ onPageChange }) {
 function NotificationItem({
   notification,
   expanded,
+  selectionMode,
+  selected,
   onClick,
   onKeyDown,
   onView,
+  onToggleSelect,
 }) {
   const { Icon, iconClass } = getNotificationAppearance(notification.type);
 
@@ -153,12 +270,25 @@ function NotificationItem({
     <div
       className={`notification-item ${
         !notification.read ? "notification-item-unread" : ""
+      } ${selectionMode ? "notification-item-selectable" : ""} ${
+        selected ? "notification-item-selected" : ""
       }`}
       onClick={onClick}
       onKeyDown={onKeyDown}
       role="button"
       tabIndex={0}
     >
+      {selectionMode && (
+        <input
+          type="checkbox"
+          className="notification-select-checkbox"
+          checked={selected}
+          aria-label={`Select notification: ${notification.title}`}
+          onClick={(event) => event.stopPropagation()}
+          onChange={onToggleSelect}
+        />
+      )}
+
       <div className={`notification-item-icon ${iconClass}`}>
         <Icon size={17} />
       </div>
@@ -234,7 +364,7 @@ function NotificationItem({
         )}
       </div>
 
-      {canViewError && (
+      {!selectionMode && canViewError && (
         <button
           type="button"
           className="notification-view-label"

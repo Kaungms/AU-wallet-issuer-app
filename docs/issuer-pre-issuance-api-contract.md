@@ -63,6 +63,7 @@ The maximum `pageSize` is 100.
         "majorConcentration": null,
         "academicStatus": "graduated",
         "graduationDate": "2026-01-17",
+        "personalEmail": "student@example.com",
         "walletEligibility": "not_verified"
       }
     ]
@@ -95,6 +96,7 @@ The maximum `pageSize` is 100.
     "admissionDate": "2022-06-01",
     "academicStatus": "graduated",
     "graduationDate": "2026-01-17",
+    "personalEmail": "student@example.com",
     "walletEligibility": "not_verified",
     "requiredCredits": 132,
     "creditSummary": {
@@ -245,7 +247,8 @@ Request body, containing 1 to 100 unique student numbers:
     "results": [
       {
         "studentNumber": "6499002",
-        "status": "not_verified"
+        "status": "verified",
+        "personalEmail": "student@example.com"
       }
     ]
   },
@@ -254,8 +257,11 @@ Request body, containing 1 to 100 unique student numbers:
 }
 ```
 
-The only allowed status values are `verified` and `not_verified`. The frontend
-does not receive holder, provider, connection, enrollment, DID, or wallet-account
+The only allowed status values are `verified` and `not_verified`. When a verified
+wallet connection exists, `personalEmail` is resolved server-side from the
+wallet/Supabase holder record associated with the verified enrollment. The
+frontend receives the email address only as a notification recipient; it does
+not receive holder, provider, connection, enrollment, DID, or wallet-account
 identifiers.
 
 `verified` requires an `assumption-university` provider connection in verified
@@ -282,6 +288,8 @@ academic.course_result.course_id
   -> academic.course.course_id
 wallet.holder_issuer_connection.verified_enrollment_id
   -> academic.student_program_enrollment.enrollment_id
+wallet.holder_issuer_connection.holder_id
+  -> wallet.holder.personal_email
 wallet.holder_issuer_connection.issuer_provider_id
   -> wallet.issuer_provider.issuer_provider_id
 ```

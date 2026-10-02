@@ -6,9 +6,19 @@ React/Vite issuer portal backed by a separately deployed NestJS API.
 
 Create an ignored `.env.local` with the NestJS server's base URL:
 
-```dotenv   
+```dotenv
 VITE_API_BASE_URL=http://<backend-host>:3000
 ```
+
+For holder email notifications, configure the Vercel server function with:
+
+```dotenv
+RESEND_API_KEY=re_...
+RESEND_FROM_EMAIL=credentials@your-verified-domain.example
+```
+
+The student response must include `email`, `holderEmail`, or `contactEmail`.
+The key must never be placed in a `VITE_` variable or frontend source.
 
 Then run the frontend on the backend's allowlisted development origin:
 
@@ -51,6 +61,7 @@ The response schemas and database field mappings are documented in
    your backend uses one. Enable it for Production and Preview as needed.
    `VITE_` values are public and embedded at build time; do not put passwords,
    database credentials, or signing keys in them. Redeploy after changing them.
+
 4. Ensure AWS networking allows Vercel to reach the configured backend port and
    NestJS listens on a reachable interface. Deployed browsers use the same-origin
    `/api/backend` proxy; local development still calls the backend directly and
@@ -64,7 +75,7 @@ files; use a Vercel deployment to exercise the server-side proxy. The Node funct
 `api/proxy.js` reads `VITE_API_BASE_URL` at runtime, forwards login bodies and
 Bearer authorization, and preserves backend response status codes. API routing
 runs before the SPA fallback. Keep this variable enabled in each deployment
- environment (Production/Preview). Local Vite development uses the API directly.
+environment (Production/Preview). Local Vite development uses the API directly.
 
 The browser-to-Vercel connection uses HTTPS, allowing an HTTP upstream without
 browser mixed-content errors. The Vercel-to-HTTP-backend connection remains

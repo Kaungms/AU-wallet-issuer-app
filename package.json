@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port 5173 --strictPort",
+    "dev:local": "npx vercel dev --listen 5173",
     "build": "vite build",
     "lint": "eslint .",
     "test": "node --test src/api/*.test.js",
