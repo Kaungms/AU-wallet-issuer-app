@@ -133,6 +133,46 @@
   overflow-x: auto;
 }
 
+.student-data-status-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 22px;
+  border-bottom: 1px solid #eee7e3;
+  color: #817672;
+  font-size: 10px;
+}
+
+.student-data-status-filters > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.student-data-status-filters button {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid #ded5d1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #403735;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.student-data-status-filters button[aria-pressed="true"] {
+  border-color: #cc1919;
+  background: #cc1919;
+  color: #ffffff;
+}
+
+.student-data-status-filters button:focus-visible {
+  outline: 2px solid #cc1919;
+  outline-offset: 3px;
+}
+
 .student-data-table {
   width: 100%;
   min-width: 1080px;
