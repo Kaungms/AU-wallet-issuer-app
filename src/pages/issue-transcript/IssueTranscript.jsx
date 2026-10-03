@@ -267,7 +267,7 @@ function StudentAcademicReview({ student }) {
     student.credentialStatus,
   );
   const [credentialId, setCredentialId] = useState(student.credentialId);
-  const [credentialAction, setCredentialAction] = useState("reissue");
+  const [credentialAction, setCredentialAction] = useState("");
   const [revocationReason, setRevocationReason] = useState("");
   const [holderEmail, setHolderEmail] = useState(
     student.email || student.holderEmail || student.contactEmail || "",
@@ -281,7 +281,7 @@ function StudentAcademicReview({ student }) {
     setCredentialLookupError("");
     setCredentialId(null);
     setCredentialStatus(student.credentialStatus);
-    setCredentialAction("reissue");
+    setCredentialAction("");
     setIssuanceStatus("idle");
     setIssuanceResult(null);
     setIssuanceError("");
@@ -375,7 +375,7 @@ function StudentAcademicReview({ student }) {
       const revokedCredential = await revokeCredential(credentialId, { reason });
 
       setCredentialStatus("revoked");
-      setCredentialAction("reissue");
+      setCredentialAction("");
       setIssuanceResult(revokedCredential);
       setIssuanceStatus("revoked");
       const emailResult = await notifyHolder(
@@ -694,6 +694,7 @@ function StudentAcademicReview({ student }) {
             <div className="issue-credential-actions">
               <select
                 className="issue-credential-action"
+                aria-label="Credential action"
                 value={credentialAction}
                 disabled={
                   issuanceStatus === "revoking" ||
@@ -705,7 +706,7 @@ function StudentAcademicReview({ student }) {
                 {credentialIsIssued && <option value="revoke">Revoke credential</option>}
                 <option value="reissue">Reissue credential</option>
               </select>
-              <button
+              {credentialAction && <button
                 className={`issue-credential-revoke-button ${
                   credentialAction === "reissue"
                     ? "issue-credential-reissue-button"
@@ -713,7 +714,6 @@ function StudentAcademicReview({ student }) {
                 }`}
                 type="button"
                 disabled={
-                  !credentialAction ||
                   !credentialId ||
                   (credentialAction === "revoke" && !revocationReason.trim()) ||
                   issuanceStatus === "revoking" ||
@@ -732,7 +732,7 @@ function StudentAcademicReview({ student }) {
                   : issuanceStatus === "revoking"
                     ? "Revoking…"
                     : "Revoke VC"}
-              </button>
+              </button>}
             </div>
             {credentialAction === "reissue" && (
               <p className="issuance-action-note" role="status">
