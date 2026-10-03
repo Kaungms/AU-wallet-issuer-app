@@ -1,9 +1,7 @@
-import {
-  Bell,
-  ChevronDown,
-  Search,
-} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Bell, ChevronDown, LogOut, Settings } from "lucide-react";
 
+import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
 
 function Header({
@@ -12,6 +10,29 @@ function Header({
   onPageChange,
 }) {
   const { unreadCount } = useNotifications();
+  const { logout } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const profileRef = useRef(null);
+
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+
+    const closeOnOutsideClick = (event) => {
+      if (!profileRef.current?.contains(event.target)) setMenuOpen(false);
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        profileRef.current?.querySelector(".header-profile-button")?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [menuOpen]);
 
   return (
     <header className="main-header">
@@ -50,9 +71,14 @@ function Header({
           )}
         </button>
 
+        <div className="header-profile" ref={profileRef}>
         <button
           type="button"
           className="header-profile-button"
+          aria-expanded={menuOpen}
+          aria-controls="header-profile-menu"
+          aria-label="AU Registrar account menu"
+          onClick={() => setMenuOpen((open) => !open)}
         >
           <div className="header-profile-avatar">
             AR
@@ -70,6 +96,23 @@ function Header({
 
           <ChevronDown size={16} />
         </button>
+        {menuOpen && (
+          <div className="header-profile-menu" id="header-profile-menu">
+            <button type="button" onClick={() => {
+              setMenuOpen(false);
+              onPageChange?.("settings");
+            }}>
+              <Settings size={16} /> Settings
+            </button>
+            <button type="button" onClick={() => {
+              setMenuOpen(false);
+              if (window.confirm("Log out of the AU Wallet Issuer Portal?")) logout();
+            }}>
+              <LogOut size={16} /> Log out
+            </button>
+          </div>
+        )}
+        </div>
       </div>
     </header>
   );

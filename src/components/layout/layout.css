@@ -417,6 +417,44 @@
     border-color 0.15s ease;
 }
 
+.header-profile {
+  position: relative;
+}
+
+.header-profile-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 180px;
+  padding: 6px;
+  background: #ffffff;
+  border: 1px solid #e3dad6;
+  border-radius: 9px;
+  box-shadow: 0 12px 30px rgba(43, 37, 34, 0.12);
+}
+
+.header-profile-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px;
+  color: #1c1918;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.header-profile-menu button:hover,
+.header-profile-menu button:focus-visible {
+  background: #faf7f5;
+}
+
 .header-profile-button:hover {
   background: #faf7f5;
 
